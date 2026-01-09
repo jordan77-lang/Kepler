@@ -32,6 +32,7 @@ export default function GraphPanel({ config }) {
         // Max Velocity at Periapsis
         const term = (e < 1) ? -1 / a : 1 / a
         const maxV = Math.sqrt(10 * (2 / rMin + term))
+        const axisMaxV = maxV * 1.35 // Add 35% headroom
 
         // Generate Path Points
         const steps = 100 // Smooth curve
@@ -60,7 +61,7 @@ export default function GraphPanel({ config }) {
 
         // scaling functions
         const scaleX = (r) => padding + ((r - minR) / (maxR - minR)) * (width - 2 * padding)
-        const scaleY = (v) => (height - padding) - ((v / maxV) * (height - 2 * padding))
+        const scaleY = (v) => (height - padding) - ((v / axisMaxV) * (height - 2 * padding))
 
         let d = ""
         if (points.length > 0) {
@@ -70,7 +71,7 @@ export default function GraphPanel({ config }) {
             }
         }
 
-        return { pathData: d, bounds: { minR, maxR, maxV } }
+        return { pathData: d, bounds: { minR, maxR, maxV: axisMaxV } }
     }, [a, e, width, height])
 
     // 2. Animation Loop (60fps SVG update is cheap)
@@ -108,7 +109,6 @@ export default function GraphPanel({ config }) {
         <div className="absolute bottom-4 left-4 w-96 h-64 bg-slate-900 border border-slate-700 rounded-xl p-4 text-white shadow-xl z-10">
             <h3 className="text-sm font-bold text-slate-300 mb-2 flex justify-between">
                 <span>Phase Plot (v vs r)</span>
-                <span className="text-[10px] text-slate-500 uppercase">Native SVG</span>
             </h3>
 
             <div className="relative w-full h-full">
@@ -124,12 +124,12 @@ export default function GraphPanel({ config }) {
                     <circle cx={cx || padding} cy={cy || height - padding} r="4" fill="#00ffff" />
 
                     {/* Labels */}
-                    <text x={width / 2} y={height} fill="#64748b" fontSize="10" textAnchor="middle">r (AU)</text>
-                    <text x="0" y={height / 2} fill="#64748b" fontSize="10" transform={`rotate(-90, 10, ${height / 2})`} textAnchor="middle">v (km/s)</text>
+                    <text x={width / 2} y={height} fill="#64748b" fontSize="14" textAnchor="middle">r (AU)</text>
+                    <text x="0" y={height / 2} fill="#64748b" fontSize="14" transform={`rotate(-90, 10, ${height / 2})`} textAnchor="middle">v (km/s)</text>
                 </svg>
 
                 {/* Value Readout */}
-                <div className="absolute top-0 right-0 text-[10px] font-mono text-cyan-400">
+                <div className="absolute top-0 right-0 text-sm font-bold font-mono text-cyan-400">
                     r: {currentPoint.r.toFixed(2)} | v: {currentPoint.v.toFixed(2)}
                 </div>
             </div>
