@@ -216,7 +216,7 @@ export default function Controls({ config, setConfig }) {
                         <input
                             type="range"
                             min="0"
-                            max="1.5"
+                            max="5"
                             step="0.01"
                             value={config.e}
                             onChange={(e) => handleChange('e', parseFloat(e.target.value))}
