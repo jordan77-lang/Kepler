@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, memo } from 'react'
 import { Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 
-export default function ApsidesHelper({ a, e, name = "Sandbox" }) {
+const ApsidesHelper = memo(function ApsidesHelper({ a, e, name = "Sandbox" }) {
     // Determine labels based on context
     const getLabels = () => {
         // Known solar system bodies (or Voyager) -> Sun-centric
@@ -53,10 +53,10 @@ export default function ApsidesHelper({ a, e, name = "Sandbox" }) {
 
             {/* Periapsis Marker & Label */}
             <mesh position={[q, 0, 0]}>
-                <sphereGeometry args={[0.08, 16, 16]} />
-                <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={2} toneMapped={false} />
+                <sphereGeometry args={[0.025, 16, 16]} />
+                <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={5} toneMapped={false} />
                 <Html position={labelPosPeri} center zIndexRange={[100, 0]}>
-                    <div className="text-sm font-bold text-yellow-300 font-mono whitespace-nowrap px-2 py-1 bg-black/70 rounded border border-yellow-500/30 backdrop-blur-sm pointer-events-none select-none">
+                    <div className="text-xs font-bold text-yellow-300/80 font-mono whitespace-nowrap px-1 py-0.5 bg-black/60 rounded border border-yellow-500/20 backdrop-blur-sm pointer-events-none select-none">
                         {labels.peri}
                     </div>
                 </Html>
@@ -65,10 +65,10 @@ export default function ApsidesHelper({ a, e, name = "Sandbox" }) {
             {/* Apoapsis Marker & Label - Only if not hyperbolic */}
             {!isHyperbolic && (
                 <mesh position={[-Q, 0, 0]}>
-                    <sphereGeometry args={[0.08, 16, 16]} />
-                    <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} toneMapped={false} />
+                    <sphereGeometry args={[0.025, 16, 16]} />
+                    <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={5} toneMapped={false} />
                     <Html position={[0, 0.5, 0]} center zIndexRange={[100, 0]}>
-                        <div className="text-sm font-bold text-cyan-300 font-mono whitespace-nowrap px-2 py-1 bg-black/70 rounded border border-cyan-500/30 backdrop-blur-sm pointer-events-none select-none">
+                        <div className="text-xs font-bold text-cyan-300/80 font-mono whitespace-nowrap px-1 py-0.5 bg-black/60 rounded border border-cyan-500/20 backdrop-blur-sm pointer-events-none select-none">
                             {labels.apo}
                         </div>
                     </Html>
@@ -76,4 +76,6 @@ export default function ApsidesHelper({ a, e, name = "Sandbox" }) {
             )}
         </group>
     )
-}
+})
+
+export default ApsidesHelper

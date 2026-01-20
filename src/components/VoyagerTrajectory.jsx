@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect } from 'react'
+import { useMemo, useRef, useEffect, memo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Line, useGLTF, Trail } from '@react-three/drei'
 import * as THREE from 'three'
@@ -15,9 +15,13 @@ const EVENTS = [
     { t: 18.0, body: 'Exit' } // Deep space
 ]
 
-export default function VoyagerTrajectory({ launchTrigger, speed, paused }) {
+const VoyagerTrajectory = memo(function VoyagerTrajectory({ launchTrigger, speed, paused }) {
     const meshRef = useRef()
     const timeRef = useRef(0)
+
+    // OPTIMIZATION: Reusable Vector3 objects to avoid per-frame allocation
+    const posRef = useRef(new THREE.Vector3())
+    const lookTargetRef = useRef(new THREE.Vector3())
 
     const SEC_PER_YEAR = 1.0 // Normalized
 
@@ -92,49 +96,43 @@ export default function VoyagerTrajectory({ launchTrigger, speed, paused }) {
         if (!launchTrigger || paused) return
 
         // Time since launch (in simulation years)
-        // Planet.jsx: timeRef += delta * speed.
-        // Use consistent scale.
-        // We need to track our own time accumulator to match the "t" in EVENTS.
-
         timeRef.current += (delta * speed) / SEC_PER_YEAR
 
         const duration = 18.0
         const t = timeRef.current
 
-        let pos = new THREE.Vector3()
-        let lookTarget = new THREE.Vector3()
+        // OPTIMIZATION: Reuse cached Vector3 objects
+        const pos = posRef.current
+        const lookTarget = lookTargetRef.current
 
         if (t <= duration) {
             // Map Sim Time to Spline T (Piecewise Linear) to match exact Encounters
             let progress = 0
 
             if (t < 1.7) {
-                // Earth (0) -> Jupiter (1.7) => Spline 0.0 -> 0.2
                 progress = (t / 1.7) * 0.2
             } else if (t < 3.5) {
-                // Jupiter (1.7) -> Saturn (3.5) => Spline 0.2 -> 0.4
                 progress = 0.2 + ((t - 1.7) / (3.5 - 1.7)) * 0.2
             } else if (t < 8.0) {
-                // Saturn (3.5) -> Uranus (8.0) => Spline 0.4 -> 0.6
                 progress = 0.4 + ((t - 3.5) / (8.0 - 3.5)) * 0.2
             } else if (t < 12.0) {
-                // Uranus (8.0) -> Neptune (12.0) => Spline 0.6 -> 0.8
                 progress = 0.6 + ((t - 8.0) / (12.0 - 8.0)) * 0.2
             } else {
-                // Neptune (12.0) -> Exit (18.0) => Spline 0.8 -> 1.0
                 progress = 0.8 + ((t - 12.0) / (18.0 - 12.0)) * 0.2
             }
 
+            // getPoint with target parameter mutates the target instead of creating new Vector3
             curve.getPoint(Math.min(progress, 1), pos)
             curve.getPoint(Math.min(progress + 0.01, 1), lookTarget)
         } else {
             // Extrapolate Linearly into Interstellar Space
-            const endPos = curve.getPoint(1)
-            const tangent = curve.getTangent(1).normalize()
+            // Note: getPoint/getTangent without target create new Vector3, but this path is rare
+            curve.getPoint(1, pos)
+            const tangent = curve.getTangent(1) // This still allocates but only in "exit" phase
             const tOver = t - duration
-            const speedAU = 2.5 // Approx 3 AU/Year escape velocity
+            const speedAU = 2.5
 
-            pos.copy(endPos).add(tangent.multiplyScalar(tOver * speedAU))
+            pos.add(tangent.multiplyScalar(tOver * speedAU))
             lookTarget.copy(pos).add(tangent)
         }
 
@@ -169,4 +167,6 @@ export default function VoyagerTrajectory({ launchTrigger, speed, paused }) {
             </group>
         </group>
     )
-}
+})
+
+export default VoyagerTrajectory

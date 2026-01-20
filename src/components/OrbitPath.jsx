@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 import { Line } from '@react-three/drei'
 import * as THREE from 'three'
 import { UniversalKepler } from '../utils/universalKepler'
 
-export default function OrbitPath({ a, e, color = "#4caf50" }) {
+const OrbitPath = memo(function OrbitPath({ a, e, color = "#4caf50" }) {
     const points = useMemo(() => {
         const body = new UniversalKepler(a, e, 1)
         try {
@@ -24,4 +24,6 @@ export default function OrbitPath({ a, e, color = "#4caf50" }) {
             transparent
         />
     )
-}
+})
+
+export default OrbitPath

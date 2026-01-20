@@ -25,7 +25,8 @@ export default function Controls({ config, setConfig }) {
                 bodies: null,
                 realA: null, // Clear real physics data for sandbox
                 i: 0, // Reset inclination
-                launchTrigger: null // Reset launch
+                launchTrigger: null, // Reset launch
+                activePreset: "Sandbox"
             }))
             return;
         }
@@ -35,7 +36,8 @@ export default function Controls({ config, setConfig }) {
                 ...prev,
                 locked: true,
                 bodies: PRESETS.filter(p => !p.name.includes("Voyager")), // Exclude physics-based Voyager
-                launchTrigger: null // Reset launch state
+                launchTrigger: null, // Reset launch state
+                activePreset: "SolarSystem"
             }))
             return;
         }
@@ -53,7 +55,8 @@ export default function Controls({ config, setConfig }) {
                 locked: true,
                 realA: p.realA, // Pass real data
                 bodies: null,
-                launchTrigger: null // Reset launch
+                launchTrigger: null, // Reset launch
+                activePreset: presetName
             }))
         }
     }
@@ -74,35 +77,47 @@ export default function Controls({ config, setConfig }) {
                 bodies: null,
                 realA: null, // Clear real physics data
                 i: 0, // Reset
-                launchTrigger: null // Reset launch
+                launchTrigger: null, // Reset launch
+                activePreset: "Sandbox", // Treated as Sandbox but with initial params
+                activeType: typeName
             }))
         }
     }
 
     const setSandboxMode = () => {
-        setConfig(prev => ({
-            ...prev,
-            a: 5,
-            e: 0.5,
-            locked: false,
-            radius: 0.25,
-            color: "#4caf50",
-            bodies: null,
-            bodies: null,
-            realA: null, // Clear real data
-            i: 0, // Reset
-            launchTrigger: null
-        }))
+        loadPreset("Sandbox")
     }
 
     const handleReset = () => {
         if (config.launchTrigger) {
             // Return to clean Solar System
             loadPreset("SolarSystem")
-        } else {
-            // Just reset time for current view
-            setConfig(prev => ({ ...prev, resetTrigger: Date.now() }))
+            return
         }
+
+        // If we have an active preset (e.g. Earth, or Elliptical Type), reload it
+        if (config.activePreset && config.activePreset !== "Sandbox" && config.activePreset !== "SolarSystem") {
+            loadPreset(config.activePreset)
+            return
+        }
+
+        if (config.activeType) {
+            loadType(config.activeType)
+            return
+        }
+
+        // Fallback or Sandbox: Just reset time and maybe defaults if needed
+        setConfig(prev => ({
+            ...prev,
+            resetTrigger: Date.now(),
+            // Optional: if in Sandbox without Type, maybe reset to defaults? 
+            // Logic: "Reset to initial state of the Preset of type".
+            // If Sandbox was loaded originally with a=5, e=0.5, we should probably reset to that if no Type selected.
+            // But usually Sandbox preserves user changes on 'play/pause', 'reset' is time reset.
+            // User Request: "resets the simulation to the intail state of thePreset of type"
+            // Interpretation: If I modify 'a', Reset should revert 'a'.
+            ...(config.activePreset === "Sandbox" && !config.activeType ? { a: 5, e: 0.5, i: 0 } : {})
+        }))
     }
 
     return (

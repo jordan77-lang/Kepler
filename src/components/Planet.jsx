@@ -11,7 +11,7 @@ function Model({ url, scale }) {
     return <primitive object={clone} scale={scale ? [scale, scale, scale] : [0.002, 0.002, 0.002]} />
 }
 
-const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVector, model, modelScale, name, initialOffset = 0, resetTrigger }) {
+const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVector, model, modelScale, name, initialOffset = 0, resetTrigger, solarMode = false }) {
     const meshRef = useRef()
     const groupRef = useRef()
     const arrowRef = useRef()
@@ -88,22 +88,20 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
                 <mesh>
                     {model ? (
                         <Suspense fallback={<sphereGeometry args={[radius, 16, 16]} />}>
-                            <Model url={model} scale={modelScale || (radius * 2)} />
+                            <Model url={model} scale={
+                                (modelScale ? modelScale : (radius * 2)) * (solarMode ? 1.5 : 1.0)
+                            } />
                         </Suspense>
                     ) : (
                         <>
-                            <sphereGeometry args={[radius, 64, 64]} />
+                            <sphereGeometry args={[radius * (solarMode ? 1.5 : 1.0), 64, 64]} />
                             <meshStandardMaterial
                                 color={isVoyager ? "#00ffff" : color}
                                 emissive={isVoyager ? "#00ffff" : color}
                                 emissiveIntensity={isGlowy ? 2.0 : 0.1}
                                 roughness={0.6} metalness={0.2}
                             />
-                            {/* Glow halo */}
-                            <mesh scale={[1.5, 1.5, 1.5]}>
-                                <sphereGeometry args={[radius, 32, 32]} />
-                                <meshBasicMaterial color={isVoyager ? "#00ffff" : color} transparent opacity={isGlowy ? 0.4 : 0.05} side={THREE.DoubleSide} />
-                            </mesh>
+
                         </>
                     )}
                 </mesh>

@@ -10,6 +10,9 @@ export class UniversalKepler {
         this.e = e;
         this.mu = mu;
 
+        // OPTIMIZATION: Reusable result object to avoid GC pressure
+        this._result = { x: 0, y: 0, vx: 0, vy: 0, r: 0 };
+
         // Derive Periapsis Distance q
         // For Parabola (e~1), we treat input 'a' as 'q' directly to avoid collapse.
         if (Math.abs(this.e - 1.0) < 0.005) {
@@ -63,7 +66,12 @@ export class UniversalKepler {
             const vx = vr * cosNu - vt * sinNu;
             const vy = vr * sinNu + vt * cosNu;
 
-            return { x, y, vx, vy, r };
+            this._result.x = x;
+            this._result.y = y;
+            this._result.vx = vx;
+            this._result.vy = vy;
+            this._result.r = r;
+            return this._result;
         }
 
         // 2. ELLIPTIC (e < 1)
@@ -80,7 +88,14 @@ export class UniversalKepler {
             const r = a * (1 - this.e * Math.cos(E));
 
             // Allow r to be calculated, check for invalid state (optional but good for stability)
-            if (isNaN(r)) return { x: 0, y: 0, vx: 0, vy: 0, r: 0 };
+            if (isNaN(r)) {
+                this._result.x = 0;
+                this._result.y = 0;
+                this._result.vx = 0;
+                this._result.vy = 0;
+                this._result.r = 0;
+                return this._result;
+            }
 
             const vx = -Math.sqrt(this.mu * a) / r * Math.sin(E);
             const vy = Math.sqrt(this.mu * a * (1 - this.e * this.e)) / r * Math.cos(E);
@@ -89,13 +104,12 @@ export class UniversalKepler {
             const cosNu = (Math.cos(E) - this.e) / (1 - this.e * Math.cos(E));
             const sinNu = (Math.sqrt(1 - this.e * this.e) * Math.sin(E)) / (1 - this.e * Math.cos(E));
 
-            return {
-                x: r * cosNu,
-                y: r * sinNu,
-                vx: vx,
-                vy: vy,
-                r: r
-            };
+            this._result.x = r * cosNu;
+            this._result.y = r * sinNu;
+            this._result.vx = vx;
+            this._result.vy = vy;
+            this._result.r = r;
+            return this._result;
         }
 
         // 3. HYPERBOLIC (e > 1)
@@ -123,7 +137,12 @@ export class UniversalKepler {
             const vx = -a * Math.sinh(H) * H_dot;
             const vy = a * Math.sqrt(this.e * this.e - 1) * Math.cosh(H) * H_dot;
 
-            return { x, y, vx, vy, r };
+            this._result.x = x;
+            this._result.y = y;
+            this._result.vx = vx;
+            this._result.vy = vy;
+            this._result.r = r;
+            return this._result;
         }
     }
 

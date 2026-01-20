@@ -28,7 +28,7 @@ function App() {
     <div className="w-full h-full relative bg-black font-sans">
       <Scene config={config} missionRef={missionRef} setConfig={setConfig} />
       <Controls config={config} setConfig={setConfig} />
-      <Controls config={config} setConfig={setConfig} />
+
 
       {/* Hide Data and Graph in Solar System Mode */}
       {!config.bodies && (

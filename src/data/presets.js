@@ -1,7 +1,7 @@
 export const PRESETS = [
     { name: "Mercury", a: 2.5, realA: 0.39, e: 0.206, color: "#a5a5a5", radius: 0.1 },
     { name: "Venus", a: 3.5, realA: 0.72, e: 0.007, color: "#e3bb76", radius: 0.2 },
-    { name: "Earth", a: 4.5, realA: 1.00, e: 0.017, color: "#2b32b2", radius: 0.2 },
+    { name: "Earth", a: 4.5, realA: 1.00, e: 0.017, color: "#2288EE", radius: 0.2 },
     { name: "Mars", a: 6.0, realA: 1.52, e: 0.093, color: "#dd4524", radius: 0.15 },
     { name: "Jupiter", a: 12.0, realA: 5.20, e: 0.049, color: "#d9ae6f", radius: 0.5 },
     { name: "Saturn", a: 18.0, realA: 9.58, e: 0.056, color: "#ead6b8", radius: 0.45 },

@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { UniversalKepler } from '../utils/universalKepler'
 
-export default function SweptArea({ a, e, count = 12, color = "#ff00dd", opacity = 0.2, showApsides = false }) {
+const SweptArea = memo(function SweptArea({ a, e, count = 12, color = "#ff00dd", opacity = 0.2, showApsides = false }) {
     const shapes = useMemo(() => {
         // e >= 1 logic: Area sweeping is complex (Hyperbolic sector).
         // For now, let's limit swept area tool to Elliptic only to avoid crashes or infinite areas.
@@ -94,7 +94,9 @@ export default function SweptArea({ a, e, count = 12, color = "#ff00dd", opacity
             })}
         </group>
     )
-}
+})
+
+export default SweptArea
 
 function lighten(color) {
     const c = new THREE.Color(color)

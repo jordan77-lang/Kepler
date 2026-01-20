@@ -63,7 +63,8 @@ function SceneContent({ config, missionRef, setConfig }) {
 
             <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade={false} />
 
-            <Star radius={0.8} />
+            {/* Brighter Sun for Solar System to illuminate distant planets */}
+            <Star radius={0.2} intensity={config.bodies ? 20 : 6} />
 
             {/* Orbit Visuals */}
 
@@ -87,6 +88,7 @@ function SceneContent({ config, missionRef, setConfig }) {
                             initialOffset={body.initialOffset} // Pass 1977 alignment
                             resetTrigger={config.resetTrigger}
                             showVector={false}
+                            solarMode={true} // Enhance visibility for solar system preset
                         />
                     </group>
                 ))
