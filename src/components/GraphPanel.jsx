@@ -14,7 +14,6 @@ export default function GraphPanel({ config }) {
 
     // 1. Calculate Theoretical Curve
     const { pathData, bounds } = useMemo(() => {
-        const points = []
         // Analytical Bounds ensures stable scaling even if sampling misses peaks
         let rMin, rMax
 
@@ -22,42 +21,39 @@ export default function GraphPanel({ config }) {
             rMin = a * (1 - e)
             rMax = a * (1 + e)
         } else {
-            rMin = a * (e - 1)
-            rMax = rMin * 10 // Cap hyperbola
+            // Escape Orbit: Graph is handled differently or disabled
+            return { pathData: "", bounds: { minR: 0, maxR: 100, maxV: 10 } }
         }
 
-        const minR = rMin
-        const maxR = rMax
+        let minR = rMin
+        let maxR = rMax
+
+        // Prevent division by zero for circular orbits (e=0 -> minR == maxR)
+        if (maxR - minR < 0.001) {
+            minR -= 0.5
+            maxR += 0.5
+        }
 
         // Max Velocity at Periapsis
-        const term = (e < 1) ? -1 / a : 1 / a
+        const term = -1 / a
         const maxV = Math.sqrt(10 * (2 / rMin + term))
         const axisMaxV = maxV * 1.35 // Add 35% headroom
 
         // Generate Path Points
         const steps = 100 // Smooth curve
-        const limit = (e >= 1) ? Math.acos(-1 / e) * 0.95 : Math.PI
+        const limit = Math.PI
+
+        const points = []
 
         for (let i = 0; i <= steps; i++) {
             const nu = (i / steps) * limit
             const cosNu = Math.cos(nu)
-            let r, v
 
-            if (e < 1) {
-                r = (a * (1 - e * e)) / (1 + e * cosNu)
-                v = Math.sqrt(10 * (2 / r - 1 / a))
-            } else {
-                r = (a * (e * e - 1)) / (1 + e * cosNu)
-                v = Math.sqrt(10 * (2 / r + 1 / a))
-            }
-
-            // Cap r for Hyperbola drawing
-            if (r > maxR) r = maxR;
+            const r = (a * (1 - e * e)) / (1 + e * cosNu)
+            const v = Math.sqrt(10 * (2 / r - 1 / a))
 
             points.push({ r, v })
         }
-
-        // Add start point explicitly? No, loop starts at 0.
 
         // scaling functions
         const scaleX = (r) => padding + ((r - minR) / (maxR - minR)) * (width - 2 * padding)

@@ -14,9 +14,11 @@ function App() {
     paused: false,
     showVector: false,
     showArea: false,
+    showApsides: false, // Perigee/Apogee label toggle
     showFoci: false, // Law 1
     showGraph: true, // Law 3/Data
-    color: "#ff00ff"
+    color: "#ff00ff",
+    i: 0 // Inclination (degrees)
   })
 
   // Check if Voyager is active (either single body or in list or via Launch Trigger)

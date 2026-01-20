@@ -20,6 +20,11 @@ export default function Controls({ config, setConfig }) {
                 color: "#4caf50",
                 model: null,
                 bodies: null,
+                color: "#4caf50",
+                model: null,
+                bodies: null,
+                realA: null, // Clear real physics data for sandbox
+                i: 0, // Reset inclination
                 launchTrigger: null // Reset launch
             }))
             return;
@@ -66,6 +71,9 @@ export default function Controls({ config, setConfig }) {
                 color: "#4caf50",
                 model: null,
                 bodies: null,
+                bodies: null,
+                realA: null, // Clear real physics data
+                i: 0, // Reset
                 launchTrigger: null // Reset launch
             }))
         }
@@ -80,6 +88,9 @@ export default function Controls({ config, setConfig }) {
             radius: 0.25,
             color: "#4caf50",
             bodies: null,
+            bodies: null,
+            realA: null, // Clear real data
+            i: 0, // Reset
             launchTrigger: null
         }))
     }
@@ -216,7 +227,7 @@ export default function Controls({ config, setConfig }) {
                     {/* Scale */}
                     <div className={config.locked ? "opacity-50 pointer-events-none grayscale" : ""}>
                         <div className="flex justify-between text-xs mb-1.5">
-                            <span className="text-slate-300">Scale (a)</span>
+                            <span className="text-slate-300">Semi-major axis (a)</span>
                             <span className="font-mono text-cyan-300">{(config.realA || config.a).toFixed(2)} AU</span>
                         </div>
                         <input
@@ -230,10 +241,30 @@ export default function Controls({ config, setConfig }) {
                         />
                     </div>
 
-                    {/* Speed */}
+                    {/* Inclination first, Speed last as requested */}
+
+                    {/* Inclination */}
+                    <div className={config.locked ? "opacity-50 pointer-events-none grayscale" : ""}>
+                        <div className="flex justify-between text-xs mb-1.5">
+                            <span className="text-slate-300">Inclination (i)</span>
+                            <span className="font-mono text-cyan-300">{config.i}°</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="180"
+                            step="1"
+                            value={config.i}
+                            onChange={(e) => handleChange('i', parseFloat(e.target.value))}
+                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 block"
+                            disabled={config.locked}
+                        />
+                    </div>
+
+                    {/* Simulation Speed (Moved to bottom) */}
                     <div>
                         <div className="flex justify-between text-xs mb-1.5">
-                            <span className="text-slate-300">Sim Speed</span>
+                            <span className="text-slate-300">Simulation Speed</span>
                             <span className="font-mono text-cyan-300">{config.speed.toFixed(1)}x</span>
                         </div>
                         <input
@@ -292,6 +323,17 @@ export default function Controls({ config, setConfig }) {
                             className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
                         />
                         <span className="text-xs text-slate-300 group-hover:text-white">Velocity Graph</span>
+                    </label>
+
+                    <label className={`flex items-center space-x-3 cursor-pointer group ${(config.bodies || config.e === 0 || config.e >= 1) ? "opacity-40 pointer-events-none grayscale" : ""}`}>
+                        <input
+                            type="checkbox"
+                            checked={config.showApsides}
+                            onChange={(e) => handleChange('showApsides', e.target.checked)}
+                            disabled={!!config.bodies || config.e === 0 || config.e >= 1}
+                            className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                        />
+                        <span className="text-xs text-slate-300 group-hover:text-white">Show Apsides</span>
                     </label>
                 </div>
             </div>

@@ -23,6 +23,9 @@ export default function DataPanel({ config }) {
                 <div className="text-slate-400">Semi-Major (a):</div>
                 <div className="text-right text-yellow-400">{calcA.toFixed(2)} AU</div>
 
+                <div className="text-slate-400">Eccentricity (e):</div>
+                <div className="text-right text-cyan-400">{config.e?.toFixed(3) || "0.000"}</div>
+
                 <div className="text-slate-400">Period (P):</div>
                 <div className="text-right text-green-400">{P.toFixed(2)} Yrs</div>
             </div>

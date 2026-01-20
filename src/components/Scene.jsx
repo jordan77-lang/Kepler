@@ -13,6 +13,10 @@ import VelocityArrow from './VelocityArrow'
 import VoyagerManager from './VoyagerManager'
 import VoyagerTrajectory from './VoyagerTrajectory'
 import AutoZoom from './AutoZoom'
+import EclipticPlane from './EclipticPlane'
+import ApsidesHelper from './ApsidesHelper'
+
+const DEG2RAD = Math.PI / 180;
 
 function SceneContent({ config, missionRef, setConfig }) {
     const { a, e, speed, paused, showVector, showArea, showFoci } = config
@@ -88,9 +92,10 @@ function SceneContent({ config, missionRef, setConfig }) {
                 ))
             ) : (
                 /* Single Body Mode */
-                <>
-                    {showArea && <SweptArea a={a} e={e} />}
-                    {showFoci && <FociHelper a={a} e={e} />}
+                <group rotation={[0, config.i * DEG2RAD, 0]}>
+                    {(config.showApsides && e > 0 && e < 1) && <ApsidesHelper a={a} e={e} name={config.name} />}
+                    {showArea && <SweptArea a={a} e={e} showApsides={config.showApsides} />}
+                    {(showFoci && e < 1) && <FociHelper a={a} e={e} />}
                     <OrbitPath a={a} e={e} color="#4caf50" />
 
                     <Planet
@@ -105,8 +110,11 @@ function SceneContent({ config, missionRef, setConfig }) {
                         modelScale={config.modelScale}
                         resetTrigger={config.resetTrigger}
                     />
-                </>
+                </group>
             )}
+
+            {/* Show Ecliptic Plane if inclined */}
+            {(!config.bodies && config.i > 0) && <EclipticPlane />}
 
             <OrbitControls makeDefault />
 

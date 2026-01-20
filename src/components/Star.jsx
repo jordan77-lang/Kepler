@@ -10,6 +10,9 @@ export default function Star({ radius = 0.5 }) {
                 emissive="#ff8c00"
                 emissiveIntensity={2}
                 toneMapped={false}
+                transparent={true}
+                opacity={0.6}
+                depthWrite={false}
             />
             <pointLight intensity={2} color="#ffd700" distance={100} decay={2} />
         </mesh>

@@ -42,8 +42,8 @@ export default function FociHelper({ a, e }) {
 
             {/* Center Point */}
             <mesh position={[centerX, 0, 0]}>
-                <sphereGeometry args={[0.2, 16, 16]} />
-                <meshBasicMaterial color="#aaaaaa" />
+                <sphereGeometry args={[0.08, 16, 16]} />
+                <meshStandardMaterial color="#aaaaaa" emissive="#aaaaaa" emissiveIntensity={2} toneMapped={false} />
                 <Html position={[0, 0.6, 0]} center>
                     <div className="text-sm font-bold text-white font-mono whitespace-nowrap px-2 py-1 bg-black/60 rounded border border-white/20 backdrop-blur-sm">
                         Center
@@ -53,8 +53,8 @@ export default function FociHelper({ a, e }) {
 
             {/* Empty Focus */}
             <mesh position={[emptyFocusX, 0, 0]}>
-                <sphereGeometry args={[0.2, 16, 16]} />
-                <meshBasicMaterial color="#ff4444" />
+                <sphereGeometry args={[0.08, 16, 16]} />
+                <meshStandardMaterial color="#ff4444" emissive="#ff4444" emissiveIntensity={2} toneMapped={false} />
                 <Html position={[0, 0.6, 0]} center>
                     <div className="text-sm font-bold text-red-400 font-mono whitespace-nowrap px-2 py-1 bg-black/60 rounded border border-red-500/30 backdrop-blur-sm">
                         Empty Focus
