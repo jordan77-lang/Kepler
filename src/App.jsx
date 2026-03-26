@@ -1,17 +1,13 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Scene from './components/Scene'
 import Controls from './components/Controls'
-import DataPanel from './components/DataPanel'
-import GraphPanel from './components/GraphPanel'
-import MissionTimer from './components/MissionTimer'
 
 function App() {
-  const missionRef = useRef()
   const [config, setConfig] = useState({
     a: 5,        // Semi-major axis
     e: 0.5,      // Eccentricity
     speed: 1,    // Simulation speed
-    paused: false,
+    paused: true,
     showVector: false,
     showArea: false,
     showApsides: false, // Perigee/Apogee label toggle
@@ -21,27 +17,12 @@ function App() {
     i: 0 // Inclination (degrees)
   })
 
-  // Check if Voyager is active (either single body or in list or via Launch Trigger)
-  const isVoyager = config.name?.includes("Voyager") || config.bodies?.some(b => b.name.includes("Voyager")) || !!config.launchTrigger
-
   return (
     <div className="w-full h-full relative bg-black font-sans">
-      <Scene config={config} missionRef={missionRef} setConfig={setConfig} />
+      <Scene config={config} />
       <Controls config={config} setConfig={setConfig} />
 
 
-      {/* Hide Data and Graph in Solar System Mode */}
-      {!config.bodies && (
-        <>
-          <DataPanel config={config} />
-          {config.showGraph && <GraphPanel config={config} />}
-        </>
-      )}
-
-      {/* Overlay Timer */}
-      <div className={`transition-opacity duration-1000 ${isVoyager ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <MissionTimer ref={missionRef} />
-      </div>
     </div>
   )
 }

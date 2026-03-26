@@ -97,7 +97,7 @@ export default function GraphPanel({ config }) {
                 }
 
                 if (textRef.current) {
-                    textRef.current.textContent = `r: ${r.toFixed(2)} | v: ${v.toFixed(2)}`
+                    textRef.current.textContent = `Radius: ${r.toFixed(2)} | Velocity: ${v.toFixed(2)}`
                 }
             }
             requestRef.current = requestAnimationFrame(update)
@@ -111,7 +111,7 @@ export default function GraphPanel({ config }) {
     useEffect(() => { timeRef.current = 0 }, [a, e, speed])
 
     return (
-        <div className="absolute bottom-4 left-4 w-96 h-64 bg-slate-900 border border-slate-700 rounded-xl p-4 text-white shadow-xl z-10">
+        <div className="w-full h-64 bg-slate-900 border border-slate-700 rounded-xl p-4 text-white shadow-xl">
             <h3 className="text-sm font-bold text-slate-300 mb-2 flex justify-between">
                 <span>Phase Plot (v vs r)</span>
             </h3>
@@ -129,13 +129,13 @@ export default function GraphPanel({ config }) {
                     <circle ref={pointRef} cx={padding} cy={height - padding} r="4" fill="#00ffff" />
 
                     {/* Labels */}
-                    <text x={width / 2} y={height} fill="#64748b" fontSize="14" textAnchor="middle">r (AU)</text>
-                    <text x="0" y={height / 2} fill="#64748b" fontSize="14" transform={`rotate(-90, 10, ${height / 2})`} textAnchor="middle">v (km/s)</text>
+                    <text x={width / 2} y={height} fill="#cbd5e1" fontSize="14" textAnchor="middle">Radius (AU)</text>
+                    <text x="0" y={height / 2} fill="#cbd5e1" fontSize="14" transform={`rotate(-90, 10, ${height / 2})`} textAnchor="middle">Velocity (km/s)</text>
                 </svg>
 
                 {/* Value Readout (Ref Controlled) */}
                 <div ref={textRef} className="absolute top-0 right-0 text-sm font-bold font-mono text-cyan-400">
-                    r: 0.00 | v: 0.00
+                    Radius: 0.00 | Velocity: 0.00
                 </div>
             </div>
         </div>

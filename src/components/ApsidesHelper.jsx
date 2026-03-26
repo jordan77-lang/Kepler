@@ -1,23 +1,14 @@
 import React, { useMemo, memo } from 'react'
 import { Html, Line } from '@react-three/drei'
+import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const ApsidesHelper = memo(function ApsidesHelper({ a, e, name = "Sandbox" }) {
-    // Determine labels based on context
-    const getLabels = () => {
-        // Known solar system bodies (or Voyager) -> Sun-centric
-        // Note: Presets usually imply Sun-centric unless specified otherwise
-        const solarBodies = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Voyager"]
-        const isSolar = solarBodies.some(body => name?.includes(body)) || name === "Halley's Comet"
-
-        if (isSolar) return { peri: "Perihelion", apo: "Aphelion" }
-        if (name === "Moon") return { peri: "Perigee", apo: "Apogee" }
-
-        // Default / Sandbox
-        return { peri: "Periapsis", apo: "Apoapsis" }
-    }
-
-    const labels = getLabels()
+    const labels = { peri: "Perihelion", apo: "Aphelion" }
+    const { camera } = useThree()
+    const camDist = camera.position.length()
+    // Scale dot with camera distance so it stays visible at any zoom level
+    const dotR = Math.max(0.02, camDist * 0.003)
     const isHyperbolic = e >= 1;
 
     // Calculate positions
@@ -53,10 +44,10 @@ const ApsidesHelper = memo(function ApsidesHelper({ a, e, name = "Sandbox" }) {
 
             {/* Periapsis Marker & Label */}
             <mesh position={[q, 0, 0]}>
-                <sphereGeometry args={[0.025, 16, 16]} />
+                <sphereGeometry args={[dotR, 16, 16]} />
                 <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={5} toneMapped={false} />
                 <Html position={labelPosPeri} center zIndexRange={[100, 0]}>
-                    <div className="text-xs font-bold text-yellow-300/80 font-mono whitespace-nowrap px-1 py-0.5 bg-black/60 rounded border border-yellow-500/20 backdrop-blur-sm pointer-events-none select-none">
+                    <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-yellow-400/40 whitespace-nowrap">
                         {labels.peri}
                     </div>
                 </Html>
@@ -65,10 +56,10 @@ const ApsidesHelper = memo(function ApsidesHelper({ a, e, name = "Sandbox" }) {
             {/* Apoapsis Marker & Label - Only if not hyperbolic */}
             {!isHyperbolic && (
                 <mesh position={[-Q, 0, 0]}>
-                    <sphereGeometry args={[0.025, 16, 16]} />
+                    <sphereGeometry args={[dotR, 16, 16]} />
                     <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={5} toneMapped={false} />
                     <Html position={[0, 0.5, 0]} center zIndexRange={[100, 0]}>
-                        <div className="text-xs font-bold text-cyan-300/80 font-mono whitespace-nowrap px-1 py-0.5 bg-black/60 rounded border border-cyan-500/20 backdrop-blur-sm pointer-events-none select-none">
+                        <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-cyan-400/40 whitespace-nowrap">
                             {labels.apo}
                         </div>
                     </Html>

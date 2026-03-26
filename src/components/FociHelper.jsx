@@ -1,9 +1,13 @@
 import { Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import { useMemo, memo } from 'react'
+import { useThree } from '@react-three/fiber'
 
 const FociHelper = memo(function FociHelper({ a, e }) {
     const isHyperbola = e >= 1;
+    const { camera } = useThree()
+    const camDist = camera.position.length()
+    const dotR = Math.max(0.02, camDist * 0.003)
 
     // Line Points calculation
     // Ellipse: from periapsis (a(1-e), 0, 0) to apoapsis (-a(1+e), 0, 0)
@@ -33,19 +37,24 @@ const FociHelper = memo(function FociHelper({ a, e }) {
             {/* Major Axis Line */}
             <Line
                 points={linePoints}
-                color={new THREE.Color(4, 4, 4)} // HDR White for Glow
+                color="#ffffff"
                 transparent
-                opacity={0.6}
-                lineWidth={1}
+                opacity={0.8}
+                lineWidth={1.5}
                 toneMapped={false}
             />
+            <Html position={[0, 0.35, 0]} center>
+                <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-white/30">
+                    Major Axis
+                </div>
+            </Html>
 
             {/* Center Point */}
             <mesh position={[centerX, 0, 0]}>
-                <sphereGeometry args={[0.025, 16, 16]} />
+                <sphereGeometry args={[dotR, 16, 16]} />
                 <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={5} toneMapped={false} />
                 <Html position={[0, 0.4, 0]} center>
-                    <div className="text-xs font-bold text-white/50 font-mono whitespace-nowrap px-1 py-0.5 pointer-events-none select-none">
+                    <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-white/30">
                         Center
                     </div>
                 </Html>
@@ -53,11 +62,11 @@ const FociHelper = memo(function FociHelper({ a, e }) {
 
             {/* Empty Focus */}
             <mesh position={[emptyFocusX, 0, 0]}>
-                <sphereGeometry args={[0.025, 16, 16]} />
+                <sphereGeometry args={[dotR, 16, 16]} />
                 <meshStandardMaterial color="#ff4444" emissive="#ff4444" emissiveIntensity={5} toneMapped={false} />
                 <Html position={[0, 0.4, 0]} center>
-                    <div className="text-xs font-bold text-red-400/80 font-mono whitespace-nowrap px-1 py-0.5 pointer-events-none select-none">
-                        Empty Focus
+                    <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-red-400/40">
+                        Focus
                     </div>
                 </Html>
             </mesh>
