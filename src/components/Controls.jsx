@@ -1,6 +1,6 @@
 import React from 'react'
-import { Play, Pause, RotateCcw, Boxes } from 'lucide-react'
-import { PRESETS, ORBIT_TYPES } from '../data/presets'
+import { Play, Pause, RotateCcw } from 'lucide-react'
+import { PRESETS } from '../data/presets'
 import GraphPanel from './GraphPanel'
 
 import logo from '../assets/orbital-controls-logo.png'
@@ -73,33 +73,6 @@ export default function Controls({ config, setConfig }) {
         }
     }
 
-    const loadType = (typeName) => {
-        const t = ORBIT_TYPES.find(x => x.label === typeName)
-        if (t) {
-            // "When they select a trajectory type, lets have it be the generic sandbox planet."
-            setConfig(prev => ({
-                ...prev,
-                a: t.a,
-                e: t.e,
-                locked: false, // Unlock for sandbox
-                radius: 0.25,
-                color: "#4caf50",
-                model: null,
-                bodies: null,
-                realA: null, // Clear real physics data
-                i: 0, // Reset
-                activePreset: "Sandbox", // Treated as Sandbox but with initial params
-                activeType: typeName,
-                paused: true,
-                resetTrigger: Date.now()
-            }))
-        }
-    }
-
-    const setSandboxMode = () => {
-        loadPreset("Sandbox")
-    }
-
     const selectedSolarNames = new Set(config.selectedBodies || (config.bodies ? config.bodies.map(b => b.name) : []))
 
     const toggleSolarBody = (name, checked) => {
@@ -123,11 +96,6 @@ export default function Controls({ config, setConfig }) {
         // If we have an active preset (e.g. Earth, or Elliptical Type), reload it
         if (config.activePreset && config.activePreset !== "Sandbox" && config.activePreset !== "SolarSystem") {
             loadPreset(config.activePreset)
-            return
-        }
-
-        if (config.activeType) {
-            loadType(config.activeType)
             return
         }
 

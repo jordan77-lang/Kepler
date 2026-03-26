@@ -53,7 +53,7 @@ function SceneContent({ config }) {
             ) : (
                 /* Single Body Mode */
                 <group rotation={[0, config.i * DEG2RAD, 0]}>
-                    {(config.showApsides && e > 0 && e < 1) && <ApsidesHelper a={a} e={e} name={config.name} />}
+                    {(config.showApsides && e > 0 && e < 1) && <ApsidesHelper a={a} e={e} />}
                     {showArea && <SweptArea a={a} e={e} showApsides={config.showApsides} />}
                     {(showFoci && e < 1) && <FociHelper a={a} e={e} />}
                     <OrbitPath a={a} e={e} color="#4caf50" />

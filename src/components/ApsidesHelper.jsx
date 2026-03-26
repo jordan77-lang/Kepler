@@ -3,7 +3,7 @@ import { Html, Line } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const ApsidesHelper = memo(function ApsidesHelper({ a, e, name = "Sandbox" }) {
+const ApsidesHelper = memo(function ApsidesHelper({ a, e }) {
     const labels = { peri: "Perihelion", apo: "Aphelion" }
     const { camera } = useThree()
     const camDist = camera.position.length()

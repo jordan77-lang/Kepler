@@ -1,6 +1,6 @@
-import { useRef, useState, useLayoutEffect, Suspense, useMemo, useEffect, memo } from 'react'
+import { useRef, useLayoutEffect, Suspense, useMemo, useEffect, memo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, useGLTF, Trail } from '@react-three/drei'
+import { useGLTF, Trail } from '@react-three/drei'
 import * as THREE from 'three'
 import { UniversalKepler } from '../utils/universalKepler'
 
