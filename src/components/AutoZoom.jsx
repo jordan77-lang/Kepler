@@ -47,9 +47,9 @@ export default function AutoZoom({ config }) {
     // Orient camera when mode or inclination actually switches.
     // Never fires on play/pause, planet checkboxes, or slider changes.
     useEffect(() => {
-        camera.up.copy(normal)
+        camera.up.set(0, 1, 0)
         if (controls) controls.target.set(0, 0, 0)
-    }, [normal, camera, controls])
+    }, [camera, controls])
 
     useFrame((_, delta) => {
         if (!isZooming.current) return
@@ -59,7 +59,7 @@ export default function AutoZoom({ config }) {
         if (isFirstMount.current) {
             // Snap immediately on first mount — no fly-in animation on page load.
             camera.position.copy(target)
-            camera.up.copy(normal)
+            camera.up.set(0, 1, 0)
             camera.lookAt(0, 0, 0)
             if (controls) controls.update()
             isZooming.current = false
@@ -70,7 +70,7 @@ export default function AutoZoom({ config }) {
         // Smooth lerp for subsequent mode/scale changes.
         const t = 1 - Math.exp(-3 * delta)
         camera.position.lerp(target, t)
-        camera.up.copy(normal)
+        camera.up.set(0, 1, 0)
         camera.lookAt(0, 0, 0)
         if (controls) controls.update()
 

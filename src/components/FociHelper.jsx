@@ -3,75 +3,118 @@ import * as THREE from 'three'
 import { useMemo, memo } from 'react'
 import { useThree } from '@react-three/fiber'
 
-const FociHelper = memo(function FociHelper({ a, e }) {
+const FociHelper = memo(function FociHelper({ a, e, showFoci, showAxes }) {
     const isHyperbola = e >= 1;
     const { camera } = useThree()
     const camDist = camera.position.length()
     const dotR = Math.max(0.02, camDist * 0.003)
 
-    // Line Points calculation
-    // Ellipse: from periapsis (a(1-e), 0, 0) to apoapsis (-a(1+e), 0, 0)
-    // Hyperbola: from periapsis to... well, infinite. Let's draw a segment.
+    // Calculate b (Semi-minor axis)
+    const b = isHyperbola ? a * Math.sqrt(e * e - 1) : a * Math.sqrt(1 - e * e);
 
-    const linePoints = useMemo(() => {
-        if (isHyperbola) {
-            // Draw from finite distance behind focus to periapsis
-            // Center is at (ae, 0). Periapsis is at (a(e-1), 0).
-            // Let's draw a nice axis line through the focus.
-            return [new THREE.Vector3(-a * 2, 0, 0), new THREE.Vector3(a * 5, 0, 0)]
-        } else {
-            // Periapsis at x = a(1-e) ? No, in our Kepler solver, periapsis is at x=a(e-1)?
-            // Wait, let's check UniversalKepler orientation for e<1.
-            // At t=0, x = a(cos(E)-e). If E=0 -> x = a(1-e). This is periapsis. Valid.
-            // At E=PI -> x = a(-1-e) = -a(1+e). This is apoapsis. Valid.
-
-            return [new THREE.Vector3(a * (1 - e), 0, 0), new THREE.Vector3(-a * (1 + e), 0, 0)]
-        }
-    }, [a, e, isHyperbola])
-
+    // Center and empty focus positions for Kepler equation where Sun is at origin
     const centerX = isHyperbola ? (a * e) : (-a * e);
     const emptyFocusX = isHyperbola ? (2 * a * e) : (-2 * a * e);
 
+    // Semi-Major Axis Line (Center to Periapsis)
+    // For ellipse, periapsis is at a(1-e). Center is at -ae.
+    const semiMajorPoints = useMemo(() => {
+        if (isHyperbola) return []; 
+        return [new THREE.Vector3(centerX, 0, 0), new THREE.Vector3(a * (1 - e), 0, 0)]
+    }, [a, e, centerX, isHyperbola])
+
+    // Semi-Minor Axis Line (Center to top edge)
+    const semiMinorPoints = useMemo(() => {
+        if (isHyperbola) return [];
+        return [new THREE.Vector3(centerX, 0, 0), new THREE.Vector3(centerX, b, 0)]
+    }, [centerX, b, isHyperbola])
+
     return (
         <group>
-            {/* Major Axis Line */}
-            <Line
-                points={linePoints}
-                color="#ffffff"
-                transparent
-                opacity={0.8}
-                lineWidth={1.5}
-                toneMapped={false}
-            />
-            <Html position={[0, 0.35, 0]} center>
-                <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-white/30">
-                    Major Axis
-                </div>
-            </Html>
+            {/* --- SEMI-AXES MEASUREMENTS --- */}
+            {showAxes && !isHyperbola && (
+                <>
+                    {/* Semi-Major Axis Line */}
+                    <Line
+                        points={semiMajorPoints}
+                        color="#00ffff"
+                        transparent
+                        opacity={0.8}
+                        lineWidth={2}
+                        dashed={true}
+                        dashScale={2}
+                        dashSize={0.5}
+                        gapSize={0.3}
+                        toneMapped={false}
+                    />
+                    {/* Semi-Major Axis Label */}
+                    <Html position={[(centerX + a * (1 - e)) / 2, -0.35, 0]} center>
+                        <div className="text-xs font-bold text-cyan-300 bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-cyan-500/50 whitespace-nowrap">
+                            Semi-Major (a) = {a.toFixed(2)} AU
+                        </div>
+                    </Html>
 
-            {/* Center Point */}
-            <mesh position={[centerX, 0, 0]}>
-                <sphereGeometry args={[dotR, 16, 16]} />
-                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={5} toneMapped={false} />
-                <Html position={[0, 0.4, 0]} center>
-                    <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-white/30">
-                        Center
-                    </div>
-                </Html>
-            </mesh>
+                    {/* Semi-Minor Axis Line */}
+                    <Line
+                        points={semiMinorPoints}
+                        color="#d946ef"
+                        transparent
+                        opacity={0.8}
+                        lineWidth={2}
+                        dashed={true}
+                        dashScale={2}
+                        dashSize={0.5}
+                        gapSize={0.3}
+                        toneMapped={false}
+                    />
+                    {/* Semi-Minor Axis Label */}
+                    <Html position={[centerX - 0.2, b / 2, 0]} zIndexRange={[100, 0]}>
+                        <div className="text-xs font-bold text-fuchsia-300 bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-fuchsia-500/50 whitespace-nowrap" style={{ transform: 'translateX(-100%)' }}>
+                            Semi-Minor (b) = {b.toFixed(2)} AU
+                        </div>
+                    </Html>
+                </>
+            )}
 
-            {/* Empty Focus */}
-            <mesh position={[emptyFocusX, 0, 0]}>
-                <sphereGeometry args={[dotR, 16, 16]} />
-                <meshStandardMaterial color="#ff4444" emissive="#ff4444" emissiveIntensity={5} toneMapped={false} />
-                <Html position={[0, 0.4, 0]} center>
-                    <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-red-400/40">
-                        Focus
-                    </div>
-                </Html>
-            </mesh>
+            {/* --- FOCI AND CENTER POINTS --- */}
+            {showFoci && (
+                <>
+                    {/* Sun Focus Point (Black dot so it's visible on the bright Sun) */}
+                    <mesh position={[0, 0, 0]} renderOrder={1}>
+                        <sphereGeometry args={[dotR * 1.5, 16, 16]} />
+                        <meshBasicMaterial color="#000000" depthTest={false} />
+                    </mesh>
 
-            {/* Sun Label - Keep existing style but simpler */}
+                    {/* Sun Focus Label */}
+                    <Html position={[0, 0.4, 0]} center>
+                        <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-orange-400/40 whitespace-nowrap" style={{ zIndex: 10 }}>
+                            Focus
+                        </div>
+                    </Html>
+
+                    {/* Center Point */}
+                    <mesh position={[centerX, 0, 0]}>
+                        <sphereGeometry args={[dotR, 16, 16]} />
+                        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={5} toneMapped={false} />
+                        <Html position={[0, 0.4, 0]} center>
+                            <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-white/30 whitespace-nowrap">
+                                Center
+                            </div>
+                        </Html>
+                    </mesh>
+
+                    {/* Empty Focus */}
+                    <mesh position={[emptyFocusX, 0, 0]}>
+                        <sphereGeometry args={[dotR, 16, 16]} />
+                        <meshStandardMaterial color="#ff4444" emissive="#ff4444" emissiveIntensity={5} toneMapped={false} />
+                        <Html position={[0, 0.4, 0]} center>
+                            <div className="text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-red-400/40 whitespace-nowrap">
+                                Empty Focus
+                            </div>
+                        </Html>
+                    </mesh>
+                </>
+            )}
         </group>
     )
 })

@@ -4,22 +4,22 @@ import { UniversalKepler } from '../utils/universalKepler'
 // ---- Description generators ----
 
 function describeEccentricity(e) {
-    if (e === 0)       return 'perfectly circular'
+    if (e === 0)       return 'circular'
     if (e < 0.1)       return 'nearly circular'
     if (e < 0.4)       return 'slightly elliptical'
     if (e < 0.7)       return 'elliptical'
     if (e < 0.95)      return 'highly elliptical'
-    if (e < 1.0)       return 'near-parabolic (long-period comet-like)'
-    if (e === 1.0)     return 'parabolic — exactly at escape velocity'
-    return 'hyperbolic — unbound, escape trajectory'
+    if (e < 1.0)       return 'near-parabolic'
+    if (e === 1.0)     return 'parabolic'
+    return 'hyperbolic'
 }
 
 function describePosition(r, rMin, rMax) {
-    if (rMax - rMin < 0.01) return 'in a circular orbit at constant distance'
+    if (rMax - rMin < 0.01) return 'constant distance'
     const fraction = (r - rMin) / (rMax - rMin)
-    if (fraction < 0.15) return 'near perihelion — closest approach to the star'
-    if (fraction > 0.85) return 'near aphelion — farthest point from the star'
-    return 'in mid-orbit'
+    if (fraction < 0.15) return 'near perihelion'
+    if (fraction > 0.85) return 'near aphelion'
+    return 'mid-orbit'
 }
 
 function describeLaw(config, time) {
@@ -33,12 +33,14 @@ function describeLaw(config, time) {
             const startTime = b.initialOffset ? (n > 0 ? b.initialOffset / n : 0) : 0
             const state = kepler.getState(startTime + time)
             const v = Math.sqrt(state.vx * state.vx + state.vy * state.vy)
-            return { name: b.name, a: b.realA || b.a, v: v }
+            const distRatio = b.realA ? (b.realA / b.a) : 1
+            const currentDist = state.r * distRatio
+            return { name: b.name, a: b.realA || b.a, currentDist, v }
         })
         
-        // Sort by distance (a)
+        // Sort by semi-major axis (a) to keep the list stable
         speeds.sort((x, y) => x.a - y.a)
-        const speedText = speeds.map(s => `\u2022 ${s.name}: ${s.v.toFixed(2)} km/s at ${s.a.toFixed(2)} AU`).join('\n')
+        const speedText = speeds.map(s => `\u2022 ${s.name}: ${s.v.toFixed(2)} km/s at ${s.currentDist.toFixed(2)} AU`).join('\n')
 
         return {
             mode: "Kepler's 3rd Law",
@@ -71,17 +73,14 @@ function buildDescription(config, time, r, v, rMin, rMax) {
     const eDesc = describeEccentricity(config.e)
     const posDesc = config.e < 1 ? describePosition(r, rMin, rMax) : 'on a one-way hyperbolic flyby'
 
-    const speedQual = config.e < 1
-        ? (r <= rMin * 1.15 ? 'near its maximum velocity' :
-           r >= rMax * 0.85 ? 'near its minimum velocity' :
-           'at moderate velocity')
-        : 'accelerating as it approaches perihelion'
-
     const overlays = []
     if (config.showVector) overlays.push('velocity vector')
     if (config.showArea)   overlays.push('swept areas')
-    if (config.showFoci)   overlays.push('foci and major axis')
-    if (config.showApsides) overlays.push('perihelion/aphelion labels')
+    if (config.showRadius) overlays.push('orbital radius')
+    if (config.showFoci)   overlays.push('foci and center')
+    if (config.showAxes)   overlays.push('semi-axes measurements')
+    if (config.showGraph)  overlays.push('phase plot graph')
+    if (config.showApsides) overlays.push('perihelion and aphelion labels')
 
     const lines = [
         `Mode: Explore Body \u2014 ${bodyName}`,
@@ -91,9 +90,10 @@ function buildDescription(config, time, r, v, rMin, rMax) {
     if (config.e < 1) {
         lines.push(`Semi-major axis: ${(config.realA || config.a).toFixed(2)} AU`)
         lines.push(`Position: ${posDesc}`)
-        lines.push(`Speed: ${v.toFixed(2)} \u2014 ${speedQual}`)
+        lines.push(`Speed: ${v.toFixed(2)} km/s`)
     } else {
         lines.push(`Position: ${posDesc}`)
+        lines.push(`Speed: ${v.toFixed(2)} km/s`)
         lines.push(`Current radius: ${r.toFixed(2)} (simulation units)`)
     }
 
@@ -128,7 +128,7 @@ export default function NarratorPanel({ config }) {
     useEffect(() => {
         keplerRef.current = new UniversalKepler(a, e, 10)
         timeRef.current   = 0
-    }, [a, e])
+    }, [a, e, config.resetTrigger])
 
     // Advance time and update description every 4 seconds
     useEffect(() => {
@@ -158,17 +158,23 @@ export default function NarratorPanel({ config }) {
         return () => cancelAnimationFrame(rafRef.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [a, e, speed, paused, rMin, rMax, config.bodies, config.showVector,
-        config.showArea, config.showFoci, config.showApsides, config.activePreset])
+        config.showArea, config.showFoci, config.showAxes, config.showRadius, 
+        config.showGraph, config.showApsides, config.activePreset, config.resetTrigger])
 
     return (
         <div
             className="absolute bottom-4 left-4 z-40 max-w-sm w-[calc(100vw-2rem)] md:w-80 bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 text-white shadow-2xl"
             role="region"
-            aria-label="Simulation narrator"
+            aria-label="Screen Reader Output"
         >
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Simulation Narrator
-            </p>
+            <div className="mb-3">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    Screen Reader Output
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                    Updates every 4 seconds or when paused.
+                </p>
+            </div>
 
             <div
                 aria-live="polite"

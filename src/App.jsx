@@ -12,7 +12,9 @@ function App() {
     showVector: false,
     showArea: false,
     showApsides: false, // Perigee/Apogee label toggle
-    showFoci: false, // Law 1
+    showFoci: false, // Law 1: Foci points
+    showAxes: false, // Law 1: Semi-Major/Minor Axes
+    showRadius: false, // Law 2: Dynamic Orbital Radius
     showGraph: true, // Law 3/Data
     showNarrator: false, // Accessibility narrator
     color: "#ff00ff",

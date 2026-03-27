@@ -149,7 +149,7 @@ export default function GraphPanel({ config }) {
                 
                 {/* Footnote */}
                 <div className="absolute -bottom-2 w-full text-center text-xs font-semibold text-slate-400">
-                    * Radius = Distance to Sun foci (AU)
+                    * Radius = Distance to Sun (AU)
                 </div>
             </div>
         </div>

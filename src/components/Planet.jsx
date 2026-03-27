@@ -1,6 +1,6 @@
 import { useRef, useLayoutEffect, Suspense, useMemo, useEffect, memo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useGLTF, Trail } from '@react-three/drei'
+import { useGLTF, Trail, Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { UniversalKepler } from '../utils/universalKepler'
 
@@ -11,10 +11,15 @@ function Model({ url, scale }) {
     return <primitive object={clone} scale={scale ? [scale, scale, scale] : [0.002, 0.002, 0.002]} />
 }
 
-const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVector, model, modelScale, name, initialOffset = 0, resetTrigger, solarMode = false }) {
+const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVector, showRadius, model, modelScale, name, initialOffset = 0, resetTrigger, solarMode = false }) {
     const meshRef = useRef()
     const groupRef = useRef()
     const arrowRef = useRef()
+    
+    // Refs for imperative dynamic radius updates
+    const radiusLineRef = useRef()
+    const radiusLabelGroupRef = useRef()
+    const radiusTextRef = useRef()
 
     // Calculate initial time offset (aligned start when initialOffset is zero)
     // n = sqrt(mu / a^3)
@@ -35,7 +40,7 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
     const isVoyager = name?.includes("Voyager")
     const isGlowy = isVoyager || name?.includes("Comet") || e >= 0.9
 
-    // Arrow Helper - Memoized
+    // Helpers - Memoized
     const arrowHelper = useMemo(() => new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 1, 0xffff00), [])
     const tempVec = useMemo(() => new THREE.Vector3(), [])
 
@@ -52,6 +57,23 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
             const len = speedMag * 1.5
             arrowRef.current.setDirection(tempVec.normalize())
             arrowRef.current.setLength(len)
+        }
+
+        if (showRadius) {
+            const dist = Math.sqrt(x * x + y * y);
+            
+            if (radiusLineRef.current) {
+                radiusLineRef.current.geometry.setFromPoints([
+                    new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(x, y, 0)
+                ])
+            }
+            if (radiusLabelGroupRef.current) {
+                radiusLabelGroupRef.current.position.set(x / 2, y / 2, 0)
+            }
+            if (radiusTextRef.current) {
+                radiusTextRef.current.innerText = `r = ${dist.toFixed(2)} AU`
+            }
         }
     }
 
@@ -70,47 +92,65 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
     // Ensure pose is visible even when paused or on first render
     useEffect(() => {
         applyState()
-    }, [applyState, showVector, paused, a, e, resetTrigger, initialOffset, name])
+    }, [applyState, showVector, showRadius, paused, a, e, resetTrigger, initialOffset, name])
 
     return (
-        <group ref={groupRef}>
-            <group ref={meshRef}>
-                {/* Trail for Voyager */}
-                {isVoyager && (
-                    <Trail width={2} length={20} color="#00ffff" decay={1} local={false} stride={0} interval={1} attenuation={(width) => width}>
-                        <mesh visible={false} />
-                    </Trail>
-                )}
-
-                <mesh>
-                    {model ? (
-                        <Suspense fallback={<sphereGeometry args={[radius, 16, 16]} />}>
-                            <Model url={model} scale={
-                                (modelScale ? modelScale : (radius * 2)) * (solarMode ? 1.5 : 1.0)
-                            } />
-                        </Suspense>
-                    ) : (
-                        <>
-                            <sphereGeometry args={[radius * (solarMode ? 1.5 : 1.0), 64, 64]} />
-                            <meshStandardMaterial
-                                color={isVoyager ? "#00ffff" : color}
-                                emissive={isVoyager ? "#00ffff" : color}
-                                emissiveIntensity={isGlowy ? 2.0 : 0.1}
-                                roughness={0.6} metalness={0.2}
-                            />
-
-                        </>
+        <>
+            <group ref={groupRef}>
+                <group ref={meshRef}>
+                    {/* Trail for Voyager */}
+                    {isVoyager && (
+                        <Trail width={2} length={20} color="#00ffff" decay={1} local={false} stride={0} interval={1} attenuation={(width) => width}>
+                            <mesh visible={false} />
+                        </Trail>
                     )}
-                </mesh>
 
-                {/* Voyager Spotlight */}
-                {isVoyager && <pointLight distance={3} intensity={5} color="cyan" />}
+                    <mesh>
+                        {model ? (
+                            <Suspense fallback={<sphereGeometry args={[radius, 16, 16]} />}>
+                                <Model url={model} scale={
+                                    (modelScale ? modelScale : (radius * 2)) * (solarMode ? 1.5 : 1.0)
+                                } />
+                            </Suspense>
+                        ) : (
+                            <>
+                                <sphereGeometry args={[radius * (solarMode ? 1.5 : 1.0), 64, 64]} />
+                                <meshStandardMaterial
+                                    color={isVoyager ? "#00ffff" : color}
+                                    emissive={isVoyager ? "#00ffff" : color}
+                                    emissiveIntensity={isGlowy ? 2.0 : 0.1}
+                                    roughness={0.6} metalness={0.2}
+                                />
+                            </>
+                        )}
+                    </mesh>
+
+                    {/* Voyager Spotlight */}
+                    {isVoyager && <pointLight distance={3} intensity={5} color="cyan" />}
+                </group>
+
+                {showVector && (
+                    <primitive object={arrowHelper} ref={arrowRef} />
+                )}
             </group>
 
-            {showVector && (
-                <primitive object={arrowHelper} ref={arrowRef} />
+            {/* Dynamic Orbital Radius Line and Label */}
+            {showRadius && (
+                <>
+                    <line ref={radiusLineRef}>
+                        <bufferGeometry />
+                        <lineBasicMaterial color="#fbbf24" depthTest={false} transparent opacity={0.8} />
+                    </line>
+                    <group ref={radiusLabelGroupRef}>
+                        <Html center zIndexRange={[100, 0]}>
+                            <div ref={radiusTextRef} className="text-xs font-bold text-yellow-400 bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-yellow-500/50 whitespace-nowrap">
+                                {/* Text is injected imperatively */}
+                            </div>
+                        </Html>
+                    </group>
+                </>
             )}
-        </group>
+        </>
     )
 })
 

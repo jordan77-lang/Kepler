@@ -375,80 +375,106 @@ export default function Controls({ config, setConfig }) {
                     </div>
                 </div>
 
-                {/* Toggles - Sandbox only */}
-                {!config.bodies && (
-                    <div className="space-y-3 pt-4 border-t border-slate-700/50">
-                        <label className="flex items-center space-x-3 cursor-pointer group">
-                            <input
-                                type="checkbox"
-                                checked={config.showVector}
-                                aria-label="Show velocity vector"
-                                onChange={(e) => handleChange('showVector', e.target.checked)}
-                                className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
-                            />
-                            <span className="text-xs text-slate-300 group-hover:text-white">Velocity Vector</span>
-                        </label>
+                {/* UI Toggles */}
+                <div className="space-y-3 pt-4 border-t border-slate-700/50 mb-5">
+                    {!config.bodies && (
+                        <>
+                            {/* Kepler's 1st Law: Geometry */}
+                            <label className={`flex items-center space-x-3 cursor-pointer group ${config.e >= 1.0 ? "opacity-40 pointer-events-none grayscale" : ""}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={config.showFoci}
+                                    aria-label="Show Foci and Center"
+                                    onChange={(e) => handleChange('showFoci', e.target.checked)}
+                                    disabled={config.e >= 1.0}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Foci & Center</span>
+                            </label>
 
-                        <label className={`flex items-center space-x-3 cursor-pointer group ${config.e >= 1.0 ? "opacity-40 pointer-events-none grayscale" : ""}`}>
-                            <input
-                                type="checkbox"
-                                checked={config.showArea}
-                                aria-label="Show swept areas"
-                                onChange={(e) => handleChange('showArea', e.target.checked)}
-                                disabled={config.e >= 1.0}
-                                className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
-                            />
-                            <span className="text-xs text-slate-300 group-hover:text-white">Swept Areas</span>
-                        </label>
+                            <label className={`flex items-center space-x-3 cursor-pointer group ${config.e >= 1.0 ? "opacity-40 pointer-events-none grayscale" : ""}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={config.showAxes}
+                                    aria-label="Show Semi-Major and Minor Axes"
+                                    onChange={(e) => handleChange('showAxes', e.target.checked)}
+                                    disabled={config.e >= 1.0}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Semi-Axes Measurements</span>
+                            </label>
 
-                        <label className={`flex items-center space-x-3 cursor-pointer group ${config.e >= 1.0 ? "opacity-40 pointer-events-none grayscale" : ""}`}>
-                            <input
-                                type="checkbox"
-                                checked={config.showFoci}
-                                aria-label="Show foci and major axis"
-                                onChange={(e) => handleChange('showFoci', e.target.checked)}
-                                disabled={config.e >= 1.0}
-                                className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
-                            />
-                            <span className="text-xs text-slate-300 group-hover:text-white">Foci & Major Axis</span>
-                        </label>
+                            <label className={`flex items-center space-x-3 cursor-pointer group ${(config.e === 0 || config.e >= 1) ? "opacity-40 pointer-events-none grayscale" : ""}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={config.showApsides}
+                                    aria-label="Show perihelion and aphelion labels"
+                                    onChange={(e) => handleChange('showApsides', e.target.checked)}
+                                    disabled={config.e === 0 || config.e >= 1}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Perihelion and Aphelion</span>
+                            </label>
 
-                        <label className="flex items-center space-x-3 cursor-pointer group">
-                            <input
-                                type="checkbox"
-                                checked={config.showGraph}
-                                aria-label="Show phase plot graph"
-                                onChange={(e) => handleChange('showGraph', e.target.checked)}
-                                className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
-                            />
-                            <span className="text-xs text-slate-300 group-hover:text-white">Phase Plot</span>
-                        </label>
+                            {/* Kepler's 2nd Law: Motion */}
+                            <label className="flex items-center space-x-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={config.showRadius}
+                                    aria-label="Show dynamic orbital radius"
+                                    onChange={(e) => handleChange('showRadius', e.target.checked)}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Orbital Radius</span>
+                            </label>
 
-                        <label className={`flex items-center space-x-3 cursor-pointer group ${(config.e === 0 || config.e >= 1) ? "opacity-40 pointer-events-none grayscale" : ""}`}>
-                            <input
-                                type="checkbox"
-                                checked={config.showApsides}
-                                aria-label="Show perihelion and aphelion labels"
-                                onChange={(e) => handleChange('showApsides', e.target.checked)}
-                                disabled={config.e === 0 || config.e >= 1}
-                                className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
-                            />
-                            <span className="text-xs text-slate-300 group-hover:text-white">Show Perihelion/Aphelion</span>
-                        </label>
-                    </div>
-                )}
+                            <label className={`flex items-center space-x-3 cursor-pointer group ${config.e >= 1.0 ? "opacity-40 pointer-events-none grayscale" : ""}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={config.showArea}
+                                    aria-label="Show swept areas"
+                                    onChange={(e) => handleChange('showArea', e.target.checked)}
+                                    disabled={config.e >= 1.0}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Swept Areas</span>
+                            </label>
 
-                {/* Always-visible Narrator Toggle */}
-                <div className="mb-5 pt-4 border-t border-slate-700/50">
+                            <label className="flex items-center space-x-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={config.showVector}
+                                    aria-label="Show velocity vector"
+                                    onChange={(e) => handleChange('showVector', e.target.checked)}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Velocity Vector</span>
+                            </label>
+
+                            {/* Data Visualization */}
+                            <label className="flex items-center space-x-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={config.showGraph}
+                                    aria-label="Show phase plot graph"
+                                    onChange={(e) => handleChange('showGraph', e.target.checked)}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Phase Plot</span>
+                            </label>
+                        </>
+                    )}
+
+                    {/* Accessibility Toggle */}
                     <label className="flex items-center space-x-3 cursor-pointer group">
                         <input
                             type="checkbox"
                             checked={config.showNarrator || false}
-                            aria-label="Enable simulation narrator — plain English description of the simulation"
+                            aria-label="Enable live screen reader output text stream"
                             onChange={(e) => handleChange('showNarrator', e.target.checked)}
                             className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
                         />
-                        <span className="text-xs text-slate-300 group-hover:text-white">Simulation Narrator</span>
+                        <span className="text-xs text-slate-300 group-hover:text-white">Screen Reader Output</span>
                     </label>
                 </div>
 

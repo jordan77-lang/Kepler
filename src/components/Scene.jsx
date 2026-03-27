@@ -12,7 +12,7 @@ import ApsidesHelper from './ApsidesHelper'
 const DEG2RAD = Math.PI / 180;
 
 function SceneContent({ config }) {
-    const { a, e, speed, paused, showVector, showArea, showFoci } = config
+    const { a, e, speed, paused, showVector, showArea, showFoci, showRadius } = config
 
     const effectiveSpeed = speed
 
@@ -55,7 +55,7 @@ function SceneContent({ config }) {
                 <group rotation={[0, config.i * DEG2RAD, 0]}>
                     {(config.showApsides && e > 0 && e < 1) && <ApsidesHelper a={a} e={e} />}
                     {showArea && <SweptArea a={a} e={e} showApsides={config.showApsides} />}
-                    {(showFoci && e < 1) && <FociHelper a={a} e={e} />}
+                    {((showFoci || config.showAxes) && e < 1) && <FociHelper a={a} e={e} showFoci={showFoci} showAxes={config.showAxes} />}
                     <OrbitPath a={a} e={e} color="#4caf50" />
 
                     <Planet
@@ -69,6 +69,7 @@ function SceneContent({ config }) {
                         model={config.model}
                         modelScale={config.modelScale}
                         resetTrigger={config.resetTrigger}
+                        showRadius={showRadius}
                     />
                 </group>
             )}

@@ -14,7 +14,6 @@ export const PRESETS = [
     // Asteroids
     { name: "Bennu", a: 3.8, realA: 1.13, e: 0.204, color: "#7a6655", radius: 0.07, type: "asteroid", initialOffset: 0 },
     // Comets
-    { name: "Hale-Bopp", a: 40.0, realA: 177.4, e: 0.9951, color: "#c8e8ff", radius: 0.13, type: "comet", initialOffset: 0 },
     { name: "Comet 67P", a: 4.5, realA: 3.46, e: 0.641, color: "#5a5a5a", radius: 0.1, type: "comet", initialOffset: 0 },
     // Interstellar
     { name: "3I/Atlas", a: 0.31, realA: null, e: 6.14, color: "#00e5ff", radius: 0.11, type: "interstellar", initialOffset: 0 },
