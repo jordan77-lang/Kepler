@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Scene from './components/Scene'
 import Controls from './components/Controls'
+import NarratorPanel from './components/NarratorPanel'
 
 function App() {
   const [config, setConfig] = useState({
@@ -13,6 +14,7 @@ function App() {
     showApsides: false, // Perigee/Apogee label toggle
     showFoci: false, // Law 1
     showGraph: true, // Law 3/Data
+    showNarrator: false, // Accessibility narrator
     color: "#ff00ff",
     i: 0 // Inclination (degrees)
   })
@@ -21,8 +23,7 @@ function App() {
     <div className="w-full h-full relative bg-black font-sans">
       <Scene config={config} />
       <Controls config={config} setConfig={setConfig} />
-
-
+      {config.showNarrator && <NarratorPanel config={config} />}
     </div>
   )
 }

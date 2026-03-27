@@ -117,7 +117,11 @@ export default function GraphPanel({ config }) {
             </h3>
 
             <div className="relative w-full h-full">
-                <svg width="100%" height="85%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+                <svg
+                    role="img"
+                    aria-label="Phase plot showing orbital velocity versus radius from the star"
+                    width="100%" height="85%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible"
+                >
                     {/* Axes */}
                     <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#334155" />
                     <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#334155" />
@@ -134,8 +138,18 @@ export default function GraphPanel({ config }) {
                 </svg>
 
                 {/* Value Readout (Ref Controlled) */}
-                <div ref={textRef} className="absolute top-0 right-0 text-sm font-bold font-mono text-cyan-400">
+                <div
+                    ref={textRef}
+                    aria-live="polite"
+                    aria-atomic="true"
+                    className="absolute top-0 right-0 text-sm font-bold font-mono text-cyan-400"
+                >
                     Radius: 0.00 | Velocity: 0.00
+                </div>
+                
+                {/* Footnote */}
+                <div className="absolute -bottom-2 w-full text-center text-xs font-semibold text-slate-400">
+                    * Radius = Distance to Sun foci (AU)
                 </div>
             </div>
         </div>
