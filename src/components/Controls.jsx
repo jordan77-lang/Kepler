@@ -124,18 +124,18 @@ export default function Controls({ config, setConfig }) {
     return (
         <>
             {/* Logo - Top Left */}
-            <div className="absolute top-0 left-0 md:left-4 z-40 pointer-events-none p-4 md:p-0 mt-2 md:mt-0">
+            <div className="absolute top-0 left-0 lg:left-4 z-40 pointer-events-none p-4 lg:p-0 mt-2 lg:mt-0">
                 <img 
                     src={logo} 
                     alt="Orbital Controls" 
-                    className="h-12 border-2 border-transparent sm:h-24 md:h-[28rem] object-contain drop-shadow-2xl transition-all duration-300"
+                    className="h-12 border-2 border-transparent sm:h-16 md:h-20 lg:h-24 xl:h-[28rem] object-contain drop-shadow-2xl transition-all duration-300"
                 />
             </div>
 
             {/* Mobile Menu Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden absolute top-4 right-4 z-[70] bg-slate-800 text-white rounded-xl border border-slate-600 shadow-2xl flex flex-col justify-center items-center gap-[5px] w-12 h-12 hover:bg-slate-700 active:scale-95 transition-all"
+                className="lg:hidden absolute top-4 right-4 z-[70] bg-slate-800 text-white rounded-xl border border-slate-600 shadow-2xl flex flex-col justify-center items-center gap-[5px] w-12 h-12 hover:bg-slate-700 active:scale-95 transition-all"
                 aria-label={isOpen ? "Close controls menu" : "Open controls menu"}
             >
                 <div className={`w-6 h-0.5 bg-white transition-transform duration-300 ${isOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
@@ -145,14 +145,14 @@ export default function Controls({ config, setConfig }) {
 
             {/* Control Panel Wrapper */}
             <div className={`
-                fixed top-0 right-0 w-full sm:w-[400px] h-[100dvh] pt-20 pb-4 px-4 bg-slate-900/98 sm:bg-slate-900/95 md:bg-transparent
-                md:absolute md:top-4 md:right-4 md:w-96 md:max-h-[calc(100vh-2rem)] md:p-0
-                flex flex-col gap-0 z-50 transition-transform duration-300 ease-in-out md:translate-x-0
+                fixed top-0 right-0 w-full sm:w-[400px] h-[100dvh] pt-20 pb-4 px-4 bg-slate-900/98 sm:bg-slate-900/95 lg:bg-transparent
+                lg:absolute lg:top-4 lg:right-4 lg:w-96 lg:max-h-[calc(100vh-2rem)] lg:p-0
+                flex flex-col gap-0 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0
                 ${isOpen ? "translate-x-0 shadow-[0_0_100px_rgba(0,0,0,0.8)]" : "translate-x-full"}
             `}>
 
                 {/* Control Panel - Inner Container */}
-                <div className="bg-transparent md:bg-slate-900/60 md:backdrop-blur-md border border-slate-700/50 rounded-xl p-4 md:pt-6 text-white md:shadow-2xl flex-1 overflow-y-auto custom-scrollbar">
+                <div className="bg-transparent lg:bg-slate-900/60 lg:backdrop-blur-md border border-slate-700/50 rounded-xl p-4 lg:pt-6 text-white lg:shadow-2xl flex-1 overflow-y-auto custom-scrollbar">
 
                 {/* Header Row */}
                 <div className="flex items-center justify-between mb-4">
