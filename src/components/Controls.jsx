@@ -128,7 +128,7 @@ export default function Controls({ config, setConfig }) {
                 <img 
                     src={logo} 
                     alt="Orbital Controls" 
-                    className="h-12 border-2 border-transparent sm:h-16 md:h-20 lg:h-24 xl:h-[28rem] object-contain drop-shadow-2xl transition-all duration-300"
+                    className="h-32 border-2 border-transparent sm:h-36 md:h-40 lg:h-48 xl:h-56 object-contain drop-shadow-2xl transition-all duration-300"
                 />
             </div>
 
@@ -152,15 +152,15 @@ export default function Controls({ config, setConfig }) {
             `}>
 
                 {/* Control Panel - Inner Container */}
-                <div className="bg-transparent lg:bg-slate-900/60 lg:backdrop-blur-md border border-slate-700/50 rounded-xl p-4 lg:pt-6 text-white lg:shadow-2xl flex-1 overflow-y-auto custom-scrollbar">
+                <div className="bg-transparent lg:bg-slate-900/60 lg:backdrop-blur-md border border-slate-700/50 rounded-xl p-3 lg:pt-4 text-white lg:shadow-2xl flex-1 overflow-y-auto custom-scrollbar">
 
                 {/* Header Row */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Controls</span>
                 </div>
 
                 {/* Presets Dropdowns */}
-                <div className="mb-5 space-y-4 bg-slate-800/40 p-3 rounded-lg border border-slate-700/50">
+                <div className="mb-3 space-y-3 bg-slate-800/40 p-3 rounded-lg border border-slate-700/50">
                     <div>
                         <label className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1.5 block">Explore Kepler's Laws</label>
                         <select
@@ -273,7 +273,7 @@ export default function Controls({ config, setConfig }) {
                 )}
 
                 {/* Playback */}
-                <div className="flex gap-3 mb-5">
+                <div className="flex gap-3 mb-3">
                     <button
                         onClick={() => handleChange('paused', !config.paused)}
                         aria-label={config.paused ? 'Play simulation' : 'Pause simulation'}
@@ -291,7 +291,7 @@ export default function Controls({ config, setConfig }) {
                     </button>
                 </div>
 
-                <div className="space-y-5 mb-5">
+                <div className="space-y-3 mb-3">
                     {!config.bodies && !config.locked && (
                         <>
                             {/* Eccentricity */}
@@ -376,7 +376,7 @@ export default function Controls({ config, setConfig }) {
                 </div>
 
                 {/* UI Toggles */}
-                <div className="space-y-3 pt-4 border-t border-slate-700/50 mb-5">
+                <div className="space-y-2 pt-2 border-t border-slate-700/50 mb-3">
                     {!config.bodies && (
                         <>
                             {/* Kepler's 1st Law: Geometry */}
@@ -401,7 +401,7 @@ export default function Controls({ config, setConfig }) {
                                     disabled={config.e >= 1.0}
                                     className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
                                 />
-                                <span className="text-xs text-slate-300 group-hover:text-white">Semi-Axes Measurements</span>
+                                <span className="text-xs text-slate-300 group-hover:text-white">Semi-Axes</span>
                             </label>
 
                             <label className={`flex items-center space-x-3 cursor-pointer group ${(config.e === 0 || config.e >= 1) ? "opacity-40 pointer-events-none grayscale" : ""}`}>
@@ -478,13 +478,15 @@ export default function Controls({ config, setConfig }) {
                     </label>
                 </div>
 
-                {/* Phase Plot under controls */}
+                {/* Phase Plot */}
                 {!config.bodies && config.showGraph && (
-                    <div className="mt-4">
+                    <div className="mt-3 pt-3 border-t border-slate-700/50">
                         <GraphPanel config={config} />
                     </div>
                 )}
+
             </div>
+
         </div>
         </>
     )

@@ -78,7 +78,7 @@ function buildDescription(config, time, r, v, rMin, rMax) {
     if (config.showArea)   overlays.push('swept areas')
     if (config.showRadius) overlays.push('orbital radius')
     if (config.showFoci)   overlays.push('foci and center')
-    if (config.showAxes)   overlays.push('semi-axes measurements')
+    if (config.showAxes)   overlays.push('semi-axes')
     if (config.showGraph)  overlays.push('phase plot graph')
     if (config.showApsides) overlays.push('perihelion and aphelion labels')
 

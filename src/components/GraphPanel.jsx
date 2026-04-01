@@ -16,9 +16,9 @@ export default function GraphPanel({ config }) {
     const keplerRef = useRef(new UniversalKepler(a, e, 10))
 
     // Dimensions
-    const width = 350
-    const height = 180
-    const padding = 20
+    const width = 320
+    const height = 130
+    const padding = 18
 
     // Update Physik Engine when props change
     useEffect(() => {
@@ -111,12 +111,12 @@ export default function GraphPanel({ config }) {
     useEffect(() => { timeRef.current = 0 }, [a, e, speed])
 
     return (
-        <div className="w-full h-64 bg-slate-900 border border-slate-700 rounded-xl p-4 text-white shadow-xl">
-            <h3 className="text-sm font-bold text-slate-300 mb-2 flex justify-between">
+        <div className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white shadow-xl">
+            <h3 className="text-xs font-bold text-slate-300 mb-1 flex justify-between">
                 <span>Phase Plot (v vs r)</span>
             </h3>
 
-            <div className="relative w-full h-full">
+            <div className="relative w-full" style={{height: '140px'}}>
                 <svg
                     role="img"
                     aria-label="Phase plot showing orbital velocity versus radius from the star"

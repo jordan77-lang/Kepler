@@ -47,13 +47,6 @@ const FociHelper = memo(function FociHelper({ a, e, showFoci, showAxes }) {
                         gapSize={0.3}
                         toneMapped={false}
                     />
-                    {/* Semi-Major Axis Label */}
-                    <Html position={[(centerX + a * (1 - e)) / 2, -0.35, 0]} center>
-                        <div className="text-xs font-bold text-cyan-300 bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-cyan-500/50 whitespace-nowrap">
-                            Semi-Major (a) = {a.toFixed(2)} AU
-                        </div>
-                    </Html>
-
                     {/* Semi-Minor Axis Line */}
                     <Line
                         points={semiMinorPoints}
@@ -67,12 +60,6 @@ const FociHelper = memo(function FociHelper({ a, e, showFoci, showAxes }) {
                         gapSize={0.3}
                         toneMapped={false}
                     />
-                    {/* Semi-Minor Axis Label */}
-                    <Html position={[centerX - 0.2, b / 2, 0]} zIndexRange={[100, 0]}>
-                        <div className="text-xs font-bold text-fuchsia-300 bg-black/70 px-2 py-0.5 rounded pointer-events-none select-none border border-fuchsia-500/50 whitespace-nowrap" style={{ transform: 'translateX(-100%)' }}>
-                            Semi-Minor (b) = {b.toFixed(2)} AU
-                        </div>
-                    </Html>
                 </>
             )}
 
