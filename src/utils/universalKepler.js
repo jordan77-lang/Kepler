@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 
+export const SIMULATION_MU = 10;
+
 /**
  * Universal Kepler Physics Utility
  * Solves for Elliptic (e < 1), Parabolic (e = 1), and Hyperbolic (e > 1) orbits.
  */
 export class UniversalKepler {
-    constructor(a = 1, e = 0, mu = 10) {
+    constructor(a = 1, e = 0, mu = SIMULATION_MU) {
         this.a = Math.abs(a);
         this.e = e;
         this.mu = mu;

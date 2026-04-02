@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { UniversalKepler } from '../utils/universalKepler'
+import { UniversalKepler, SIMULATION_MU } from '../utils/universalKepler'
 
 // ---- Description generators ----
 
@@ -28,8 +28,8 @@ function describeLaw(config, time) {
         
         // Calculate dynamic speeds for all active bodies
         const speeds = config.bodies.map(b => {
-            const kepler = new UniversalKepler(b.a, b.e, 10)
-            const n = Math.sqrt(10 / Math.pow(b.a, 3))
+            const kepler = new UniversalKepler(b.a, b.e, SIMULATION_MU)
+            const n = Math.sqrt(SIMULATION_MU / Math.pow(b.a, 3))
             const startTime = b.initialOffset ? (n > 0 ? b.initialOffset / n : 0) : 0
             const state = kepler.getState(startTime + time)
             const v = Math.sqrt(state.vx * state.vx + state.vy * state.vy)
@@ -112,7 +112,7 @@ function buildDescription(config, time, r, v, rMin, rMax) {
 export default function NarratorPanel({ config }) {
     const { a, e, speed, paused } = config
 
-    const keplerRef = useRef(new UniversalKepler(a, e, 10))
+    const keplerRef = useRef(new UniversalKepler(a, e, SIMULATION_MU))
     const timeRef   = useRef(0)
     const rafRef    = useRef()
 
@@ -126,7 +126,7 @@ export default function NarratorPanel({ config }) {
 
     // Rebuild physics engine on param change
     useEffect(() => {
-        keplerRef.current = new UniversalKepler(a, e, 10)
+        keplerRef.current = new UniversalKepler(a, e, SIMULATION_MU)
         timeRef.current   = 0
     }, [a, e, config.resetTrigger])
 

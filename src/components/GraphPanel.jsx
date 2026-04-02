@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react'
-import { UniversalKepler } from '../utils/universalKepler'
+import React, { useEffect, useRef, useMemo } from 'react'
+import { UniversalKepler, SIMULATION_MU } from '../utils/universalKepler'
 
 
 
@@ -13,7 +13,7 @@ export default function GraphPanel({ config }) {
     const textRef = useRef()
 
     // Cache the physics engine
-    const keplerRef = useRef(new UniversalKepler(a, e, 10))
+    const keplerRef = useRef(new UniversalKepler(a, e, SIMULATION_MU))
 
     // Dimensions
     const width = 320
@@ -22,7 +22,7 @@ export default function GraphPanel({ config }) {
 
     // Update Physik Engine when props change
     useEffect(() => {
-        keplerRef.current = new UniversalKepler(a, e, 10)
+        keplerRef.current = new UniversalKepler(a, e, SIMULATION_MU)
     }, [a, e])
 
     // 1. Calculate Theoretical Curve (Memoized purely for the background path)
@@ -45,7 +45,7 @@ export default function GraphPanel({ config }) {
         }
 
         const term = -1 / a
-        const maxV = Math.sqrt(10 * (2 / rMin + term))
+        const maxV = Math.sqrt(SIMULATION_MU * (2 / rMin + term))
         const axisMaxV = maxV * 1.35
 
         const steps = 100
@@ -56,7 +56,7 @@ export default function GraphPanel({ config }) {
             const nu = (i / steps) * limit
             const cosNu = Math.cos(nu)
             const r = (a * (1 - e * e)) / (1 + e * cosNu)
-            const v = Math.sqrt(10 * (2 / r - 1 / a))
+            const v = Math.sqrt(SIMULATION_MU * (2 / r - 1 / a))
             points.push({ r, v })
         }
 
@@ -119,7 +119,7 @@ export default function GraphPanel({ config }) {
             <div className="relative w-full" style={{height: '140px'}}>
                 <svg
                     role="img"
-                    aria-label="Phase plot showing orbital velocity versus radius from the star"
+                    aria-label="Phase plot of orbital velocity versus orbital radius. The dashed curve shows the theoretical relationship and the cyan point shows the current state of the orbiting body."
                     width="100%" height="85%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible"
                 >
                     {/* Axes */}

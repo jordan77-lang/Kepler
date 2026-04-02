@@ -1,8 +1,27 @@
-import { useRef, useLayoutEffect, Suspense, useMemo, useEffect, memo } from 'react'
+import { useRef, useLayoutEffect, Suspense, useMemo, useEffect, useCallback, memo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF, Trail, Html } from '@react-three/drei'
 import * as THREE from 'three'
-import { UniversalKepler } from '../utils/universalKepler'
+import { UniversalKepler, SIMULATION_MU } from '../utils/universalKepler'
+
+function createGlowTexture() {
+    const size = 128
+    const canvas = document.createElement('canvas')
+    canvas.width = size
+    canvas.height = size
+    const context = canvas.getContext('2d')
+    const gradient = context.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+    gradient.addColorStop(0, 'rgba(255,255,255,1)')
+    gradient.addColorStop(0.35, 'rgba(255,255,255,0.65)')
+    gradient.addColorStop(0.7, 'rgba(255,255,255,0.18)')
+    gradient.addColorStop(1, 'rgba(255,255,255,0)')
+    context.fillStyle = gradient
+    context.fillRect(0, 0, size, size)
+
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.needsUpdate = true
+    return texture
+}
 
 // Sub-component for GLTF to isolate Suspense
 function Model({ url, scale }) {
@@ -23,28 +42,34 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
 
     // Calculate initial time offset (aligned start when initialOffset is zero)
     // n = sqrt(mu / a^3)
-    const n = Math.sqrt(10 / Math.pow(a, 3))
+    const n = Math.sqrt(SIMULATION_MU / Math.pow(a, 3))
     const startTime = n > 0 ? initialOffset / n : 0
     const timeRef = useRef(startTime || 0)
 
     // Reset time when orbit parameters change or when reset triggers
     useLayoutEffect(() => {
-        const nLocal = Math.sqrt(10 / Math.pow(a, 3))
+        const nLocal = Math.sqrt(SIMULATION_MU / Math.pow(a, 3))
         timeRef.current = nLocal > 0 ? initialOffset / nLocal : 0
     }, [initialOffset, a, e, name, resetTrigger])
 
     // Physics Engine - Memoized to prevent recreation
-    const kepler = useMemo(() => new UniversalKepler(a, e, 10), [a, e])
+    const kepler = useMemo(() => new UniversalKepler(a, e, SIMULATION_MU), [a, e])
 
     // Visual Flags
     const isVoyager = name?.includes("Voyager")
     const isGlowy = isVoyager || name?.includes("Comet") || e >= 0.9
+    const visualRadius = radius * (solarMode ? 1.5 : 1.0)
+    const needsVisibilityBoost = isGlowy || visualRadius <= 0.16
+    const glowScale = solarMode ? 7.5 : 6
+    const glowSize = Math.max(visualRadius * glowScale, solarMode ? 0.8 : 0.45)
+    const glowOpacity = isGlowy ? 0.35 : solarMode ? 0.28 : 0.22
+    const glowTexture = useMemo(() => createGlowTexture(), [])
 
     // Helpers - Memoized
     const arrowHelper = useMemo(() => new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 1, 0xffff00), [])
     const tempVec = useMemo(() => new THREE.Vector3(), [])
 
-    const applyState = () => {
+    const applyState = useCallback(() => {
         const { x, y, vx, vy } = kepler.getState(timeRef.current)
 
         if (groupRef.current) {
@@ -75,7 +100,7 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
                 radiusTextRef.current.innerText = `r = ${dist.toFixed(2)} AU`
             }
         }
-    }
+    }, [kepler, showVector, showRadius, tempVec])
 
     useFrame((state, delta) => {
         if (paused) return;
@@ -105,6 +130,31 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
                         </Trail>
                     )}
 
+                    {needsVisibilityBoost && (
+                        <>
+                            <sprite scale={[glowSize, glowSize, 1]}>
+                                <spriteMaterial
+                                    map={glowTexture}
+                                    color={isVoyager ? "#00ffff" : color}
+                                    transparent
+                                    opacity={glowOpacity}
+                                    depthWrite={false}
+                                    blending={THREE.AdditiveBlending}
+                                />
+                            </sprite>
+                            <sprite scale={[glowSize * 0.55, glowSize * 0.55, 1]}>
+                                <spriteMaterial
+                                    map={glowTexture}
+                                    color={isVoyager ? "#c8ffff" : color}
+                                    transparent
+                                    opacity={glowOpacity * 0.7}
+                                    depthWrite={false}
+                                    blending={THREE.AdditiveBlending}
+                                />
+                            </sprite>
+                        </>
+                    )}
+
                     <mesh>
                         {model ? (
                             <Suspense fallback={<sphereGeometry args={[radius, 16, 16]} />}>
@@ -114,7 +164,7 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
                             </Suspense>
                         ) : (
                             <>
-                                <sphereGeometry args={[radius * (solarMode ? 1.5 : 1.0), 64, 64]} />
+                                <sphereGeometry args={[visualRadius, 64, 64]} />
                                 <meshStandardMaterial
                                     color={isVoyager ? "#00ffff" : color}
                                     emissive={isVoyager ? "#00ffff" : color}

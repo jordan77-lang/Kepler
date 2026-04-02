@@ -6,6 +6,23 @@ import GraphPanel from './GraphPanel'
 import logo from '../assets/orbital-controls-logo.png'
 
 const SOLAR_OBJECTS = PRESETS.filter(p => p.type)
+const DEFAULT_UI_STATE = {
+    speed: 1,
+    paused: true,
+    showVector: false,
+    showArea: false,
+    showApsides: false,
+    showFoci: false,
+    showAxes: false,
+    showRadius: false,
+    showGraph: false,
+    showNarrator: false,
+    activeObservation: ""
+}
+const DEFAULT_SOLAR_STATE = {
+    showSolarGrid: false,
+    showSolarElements: false
+}
 
 export default function Controls({ config, setConfig }) {
     const handleChange = (key, value) => {
@@ -16,6 +33,8 @@ export default function Controls({ config, setConfig }) {
         if (presetName === "Sandbox") {
             setConfig(prev => ({
                 ...prev,
+                ...DEFAULT_UI_STATE,
+                showGraph: false,
                 a: 5,
                 e: 0.5,
                 locked: false,
@@ -24,11 +43,13 @@ export default function Controls({ config, setConfig }) {
                 model: null,
                 bodies: null,
                 realA: null, // Clear real physics data for sandbox
-                i: 0, // Reset inclination
+                i: 0,
+                raan: 0,
+                argp: 0,
+                ...DEFAULT_SOLAR_STATE,
                 selectedBodies: null,
                 activePreset: "Sandbox",
                 activeType: null,
-                paused: true,
                 resetTrigger: Date.now()
             }))
             return;
@@ -37,6 +58,7 @@ export default function Controls({ config, setConfig }) {
         if (presetName === "SolarSystem") {
             setConfig(prev => ({
                 ...prev,
+                ...DEFAULT_UI_STATE,
                 locked: true,
                 bodies: SOLAR_OBJECTS.filter(p => p.type === "planet"),
                 selectedBodies: SOLAR_OBJECTS.filter(p => p.type === "planet").map(p => p.name),
@@ -45,7 +67,9 @@ export default function Controls({ config, setConfig }) {
                 model: null,
                 realA: null,
                 i: 0,
-                paused: true,
+                raan: 0,
+                argp: 0,
+                ...DEFAULT_SOLAR_STATE,
                 resetTrigger: Date.now()
             }))
             return;
@@ -55,6 +79,7 @@ export default function Controls({ config, setConfig }) {
         if (p) {
             setConfig(prev => ({
                 ...prev,
+                ...DEFAULT_UI_STATE,
                 a: p.a,
                 e: p.e,
                 radius: p.radius,
@@ -63,11 +88,14 @@ export default function Controls({ config, setConfig }) {
                 modelScale: p.scale, // Pass scale if present
                 locked: true,
                 realA: p.realA, // Pass real data
+                i: p.i ?? 0,
+                raan: p.raan ?? 0,
+                argp: p.argp ?? 0,
+                ...DEFAULT_SOLAR_STATE,
                 bodies: null,
                 selectedBodies: null,
                 activePreset: presetName,
                 activeType: null,
-                paused: true,
                 resetTrigger: Date.now()
             }))
         }
@@ -93,30 +121,44 @@ export default function Controls({ config, setConfig }) {
     }
 
     const handleReset = () => {
-        // If we have an active preset (e.g. Earth, or Elliptical Type), reload it
-        if (config.activePreset && config.activePreset !== "Sandbox" && config.activePreset !== "SolarSystem") {
-            loadPreset(config.activePreset)
-            return
-        }
-
         if (config.activePreset === "SolarSystem") {
             loadPreset("SolarSystem")
             return
         }
 
-        // Fallback or Sandbox: Just reset time and maybe defaults if needed
-        setConfig(prev => ({
-            ...prev,
-            resetTrigger: Date.now(),
-            paused: true,
-            // Optional: if in Sandbox without Type, maybe reset to defaults? 
-            // Logic: "Reset to initial state of the Preset of type".
-            // If Sandbox was loaded originally with a=5, e=0.5, we should probably reset to that if no Type selected.
-            // But usually Sandbox preserves user changes on 'play/pause', 'reset' is time reset.
-            // User Request: "resets the simulation to the intail state of thePreset of type"
-            // Interpretation: If I modify 'a', Reset should revert 'a'.
-            ...(config.activePreset === "Sandbox" && !config.activeType ? { a: 5, e: 0.5, i: 0 } : {})
-        }))
+        if (config.activePreset && config.activePreset !== "Sandbox") {
+            loadPreset(config.activePreset)
+            return
+        }
+
+        if (config.activeType) {
+            const orbitType = ORBIT_TYPES.find(type => type.label === config.activeType)
+            if (orbitType) {
+                setConfig(prev => ({
+                    ...prev,
+                    ...DEFAULT_UI_STATE,
+                    showGraph: false,
+                    a: orbitType.a,
+                    e: orbitType.e,
+                    locked: false,
+                    radius: 0.25,
+                    color: "#4caf50",
+                    model: null,
+                    modelScale: undefined,
+                    bodies: null,
+                    realA: null,
+                    i: 0,
+                    raan: 0,
+                    argp: 0,
+                    ...DEFAULT_SOLAR_STATE,
+                    selectedBodies: null,
+                    resetTrigger: Date.now()
+                }))
+                return
+            }
+        }
+
+        loadPreset("Sandbox")
     }
 
     const [isOpen, setIsOpen] = useState(false)
@@ -262,7 +304,7 @@ export default function Controls({ config, setConfig }) {
                                         aria-label={`Toggle ${obj.name} in simulation`}
                                         onChange={(e) => toggleSolarBody(obj.name, e.target.checked)}
                                     />
-                                    <span className="flex items-center gap-2">
+                                    <span className="flex items-center gap-2 flex-1">
                                         <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: obj.color }} />
                                         {obj.name}
                                     </span>
@@ -352,7 +394,66 @@ export default function Controls({ config, setConfig }) {
                                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 block"
                                 />
                             </div>
+
+                            {/* Longitude of Ascending Node — only meaningful when inclined */}
+                            <div className={config.i === 0 ? "opacity-40 pointer-events-none" : ""}>
+                                <div className="flex justify-between text-xs mb-1.5">
+                                    <span className="text-slate-300">Long. of Asc. Node (Ω)</span>
+                                    <span className="font-mono text-cyan-300">{(config.raan ?? 0).toFixed(1)}°</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="360"
+                                    step="1"
+                                    value={config.raan ?? 0}
+                                    disabled={config.i === 0}
+                                    aria-label="Longitude of ascending node"
+                                    aria-valuetext={`${(config.raan ?? 0).toFixed(1)} degrees`}
+                                    onChange={(e) => handleChange('raan', parseFloat(e.target.value))}
+                                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 block"
+                                />
+                            </div>
+
+                            {/* Argument of Periapsis — only meaningful when inclined */}
+                            <div className={config.i === 0 ? "opacity-40 pointer-events-none" : ""}>
+                                <div className="flex justify-between text-xs mb-1.5">
+                                    <span className="text-slate-300">Arg. of Periapsis (ω)</span>
+                                    <span className="font-mono text-cyan-300">{(config.argp ?? 0).toFixed(1)}°</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="360"
+                                    step="1"
+                                    value={config.argp ?? 0}
+                                    disabled={config.i === 0}
+                                    aria-label="Argument of periapsis"
+                                    aria-valuetext={`${(config.argp ?? 0).toFixed(1)} degrees`}
+                                    onChange={(e) => handleChange('argp', parseFloat(e.target.value))}
+                                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 block"
+                                />
+                            </div>
                         </>
+                    )}
+
+                    {/* Orbital Plane info — planet preset (read-only) */}
+                    {!config.bodies && config.locked && (
+                        <div className="bg-slate-800/60 rounded-lg p-3 border border-slate-700/50 space-y-2">
+                            <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Orbital Plane</p>
+                            <div className="flex justify-between text-xs">
+                                <span className="text-slate-300">Inclination (i)</span>
+                                <span className="font-mono text-cyan-300">{(config.i ?? 0).toFixed(2)}°</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                                <span className="text-slate-300">Longitude of Ascending Node (Ω)</span>
+                                <span className="font-mono text-cyan-300">{(config.raan ?? 0).toFixed(1)}°</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                                <span className="text-slate-300">Argument of Periapsis (ω)</span>
+                                <span className="font-mono text-cyan-300">{(config.argp ?? 0).toFixed(1)}°</span>
+                            </div>
+                        </div>
                     )}
 
                     {/* Simulation Speed (always available) */}
@@ -377,6 +478,36 @@ export default function Controls({ config, setConfig }) {
 
                 {/* UI Toggles */}
                 <div className="space-y-2 pt-2 border-t border-slate-700/50 mb-3">
+                    {config.bodies && (
+                        <>
+                            <label className="flex items-center space-x-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={config.showSolarGrid ?? DEFAULT_SOLAR_STATE.showSolarGrid}
+                                    onChange={(e) => setConfig(prev => ({
+                                        ...prev,
+                                        showSolarGrid: e.target.checked
+                                    }))}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">Ecliptic Grid</span>
+                            </label>
+
+                            <label className="flex items-center space-x-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={config.showSolarElements ?? DEFAULT_SOLAR_STATE.showSolarElements}
+                                    onChange={(e) => setConfig(prev => ({
+                                        ...prev,
+                                        showSolarElements: e.target.checked
+                                    }))}
+                                    className="w-5 h-5 bg-slate-700 rounded accent-cyan-500"
+                                />
+                                <span className="text-xs text-slate-300 group-hover:text-white">3D Orbital Orientation</span>
+                            </label>
+                        </>
+                    )}
+
                     {!config.bodies && (
                         <>
                             {/* Kepler's 1st Law: Geometry */}

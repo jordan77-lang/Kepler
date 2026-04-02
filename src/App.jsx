@@ -15,10 +15,16 @@ function App() {
     showFoci: false, // Law 1: Foci points
     showAxes: false, // Law 1: Semi-Major/Minor Axes
     showRadius: false, // Law 2: Dynamic Orbital Radius
-    showGraph: true, // Law 3/Data
+    showGraph: false, // Law 3/Data
     showNarrator: false, // Accessibility narrator
     color: "#ff00ff",
-    i: 0 // Inclination (degrees)
+    i: 0, // Inclination (degrees)
+    raan: 0, // Longitude of ascending node (degrees)
+    argp: 0, // Argument of periapsis (degrees)
+    showSolarGrid: false,
+    showSolarElements: false,
+    activePreset: "Sandbox",
+    activeType: null
   })
 
   return (

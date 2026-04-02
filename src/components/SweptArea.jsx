@@ -1,7 +1,7 @@
 import { useMemo, memo } from 'react'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
-import { UniversalKepler } from '../utils/universalKepler'
+import { UniversalKepler, SIMULATION_MU } from '../utils/universalKepler'
 
 const SweptArea = memo(function SweptArea({ a, e, count = 12, color = "#ff00dd", opacity = 0.2, showApsides = false }) {
     const shapes = useMemo(() => {
@@ -9,8 +9,8 @@ const SweptArea = memo(function SweptArea({ a, e, count = 12, color = "#ff00dd",
         // For now, let's limit swept area tool to Elliptic only to avoid crashes or infinite areas.
         if (e >= 1) return [];
 
-        const body = new UniversalKepler(a, e, 1)
-        const period = 2 * Math.PI * Math.sqrt(Math.pow(a, 3))
+        const body = new UniversalKepler(a, e, SIMULATION_MU)
+        const period = 2 * Math.PI * Math.sqrt(Math.pow(a, 3) / SIMULATION_MU)
         const dt = period / count
 
         const shapesList = []
