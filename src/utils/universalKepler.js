@@ -80,11 +80,24 @@ export class UniversalKepler {
         if (this.e < 1.0) {
             const a = this.a;
             const n = Math.sqrt(this.mu / Math.pow(a, 3));
-            const M = n * t;
+            const M = ((n * t) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
 
-            let E = M;
-            for (let i = 0; i < 15; i++) {
-                E = E - (E - this.e * Math.sin(E) - M) / (1 - this.e * Math.cos(E));
+            let E = this.e < 0.8
+                ? M
+                : Math.PI;
+
+            if (this.e >= 0.8) {
+                const signedM = M > Math.PI ? M - 2 * Math.PI : M;
+                E = signedM + 0.85 * this.e * Math.sign(Math.sin(signedM || 1));
+            }
+
+            for (let i = 0; i < 30; i++) {
+                const f = E - this.e * Math.sin(E) - M;
+                const df = 1 - this.e * Math.cos(E);
+                if (Math.abs(df) < 1e-8) break;
+                const step = f / df;
+                E -= step;
+                if (Math.abs(step) < 1e-8) break;
             }
 
             const r = a * (1 - this.e * Math.cos(E));
@@ -187,10 +200,9 @@ export class UniversalKepler {
             // Ellipse (e < 1)
             const pts = [];
             for (let i = 0; i <= segments; i++) {
-                const nu = (i / segments) * 2 * Math.PI;
-                const r = (this.a * (1 - this.e * this.e)) / (1 + this.e * Math.cos(nu));
-                const x = r * Math.cos(nu);
-                const y = r * Math.sin(nu);
+                const E = (i / segments) * 2 * Math.PI;
+                const x = this.a * (Math.cos(E) - this.e);
+                const y = this.a * Math.sqrt(1 - this.e * this.e) * Math.sin(E);
                 pts.push(new THREE.Vector3(x, y, 0));
             }
             return pts;

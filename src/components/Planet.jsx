@@ -4,6 +4,12 @@ import { useGLTF, Trail, Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { UniversalKepler, SIMULATION_MU } from '../utils/universalKepler'
 
+const TAIL_AXIS = new THREE.Vector3(1, 0, 0)
+
+function clamp01(value) {
+    return THREE.MathUtils.clamp(value, 0, 1)
+}
+
 function createGlowTexture() {
     const size = 128
     const canvas = document.createElement('canvas')
@@ -23,6 +29,10 @@ function createGlowTexture() {
     return texture
 }
 
+function createTailGeometry(profile) {
+    return new THREE.LatheGeometry(profile.map(([radius, height]) => new THREE.Vector2(radius, height)), 24)
+}
+
 // Sub-component for GLTF to isolate Suspense
 function Model({ url, scale }) {
     const { scene } = useGLTF(url)
@@ -30,10 +40,12 @@ function Model({ url, scale }) {
     return <primitive object={clone} scale={scale ? [scale, scale, scale] : [0.002, 0.002, 0.002]} />
 }
 
-const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVector, showRadius, model, modelScale, name, initialOffset = 0, resetTrigger, solarMode = false }) {
+const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVector, showRadius, model, modelScale, type, name, initialOffset = 0, resetTrigger, solarMode = false }) {
     const meshRef = useRef()
     const groupRef = useRef()
     const arrowRef = useRef()
+    const ionTailRef = useRef()
+    const ionGlowMaterialRef = useRef()
     
     // Refs for imperative dynamic radius updates
     const radiusLineRef = useRef()
@@ -57,7 +69,8 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
 
     // Visual Flags
     const isVoyager = name?.includes("Voyager")
-    const isGlowy = isVoyager || name?.includes("Comet") || e >= 0.9
+    const hasCometTail = type === 'comet'
+    const isGlowy = isVoyager || hasCometTail || name?.includes("Comet") || e >= 0.9
     const visualRadius = radius * (solarMode ? 1.5 : 1.0)
     const needsVisibilityBoost = isGlowy || visualRadius <= 0.16
     const glowScale = solarMode ? 7.5 : 6
@@ -68,6 +81,32 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
     // Helpers - Memoized
     const arrowHelper = useMemo(() => new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 1, 0xffff00), [])
     const tempVec = useMemo(() => new THREE.Vector3(), [])
+    const tailPosition = useMemo(() => new THREE.Vector3(), [])
+    const antiSolarDirection = useMemo(() => new THREE.Vector3(), [])
+    const tailQuaternion = useMemo(() => new THREE.Quaternion(), [])
+    const ionGlowGeometry = useMemo(() => createTailGeometry([
+        [0.5, 0],
+        [0.26, 0.08],
+        [0.11, 0.22],
+        [0.04, 0.5],
+        [0.015, 0.8],
+        [0, 1],
+    ]), [])
+
+    const updateTail = useCallback((tailRef, direction, length, width, materialRefs, opacityScale) => {
+        if (!tailRef.current) return
+
+        tailQuaternion.setFromUnitVectors(TAIL_AXIS, direction)
+        tailRef.current.visible = opacityScale > 0.01
+        tailRef.current.quaternion.copy(tailQuaternion)
+        tailRef.current.scale.set(length, width, width)
+
+        materialRefs.forEach((materialRef, index) => {
+            if (!materialRef.current) return
+            const falloff = index === 0 ? 1 : 0.55
+            materialRef.current.opacity = opacityScale * falloff
+        })
+    }, [tailQuaternion])
 
     const applyState = useCallback(() => {
         const { x, y, vx, vy } = kepler.getState(timeRef.current)
@@ -100,6 +139,26 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
                 radiusTextRef.current.innerText = `r = ${dist.toFixed(2)} AU`
             }
         }
+
+        if (hasCometTail) {
+            tailPosition.set(x, y, 0)
+
+            const heliocentricDistance = Math.max(tailPosition.length(), 0.001)
+                const solarActivity = clamp01((5.6 - heliocentricDistance) / 4.1)
+            const brightness = solarActivity * solarActivity
+
+            if (brightness > 0.01) {
+                antiSolarDirection.copy(tailPosition).normalize()
+
+                const solarScale = solarMode ? 0.72 : 0.88
+                const ionLength = THREE.MathUtils.lerp(0.55, 4.1, brightness) * solarScale
+                const ionWidth = visualRadius * 2
+
+                updateTail(ionTailRef, antiSolarDirection, ionLength, ionWidth, [ionGlowMaterialRef], 0.24 * brightness)
+            } else {
+                if (ionTailRef.current) ionTailRef.current.visible = false
+            }
+        }
     }, [kepler, showVector, showRadius, tempVec])
 
     useFrame((state, delta) => {
@@ -122,6 +181,24 @@ const Planet = memo(function Planet({ a, e, speed, paused, radius, color, showVe
     return (
         <>
             <group ref={groupRef}>
+                {hasCometTail && (
+                    <group ref={ionTailRef} visible={false}>
+                        <mesh rotation={[0, 0, -Math.PI / 2]} frustumCulled={false} renderOrder={3}>
+                            <primitive object={ionGlowGeometry} attach="geometry" />
+                            <meshBasicMaterial
+                                ref={ionGlowMaterialRef}
+                                color="#8deaff"
+                                transparent
+                                opacity={0}
+                                depthWrite={false}
+                                depthTest={false}
+                                blending={THREE.AdditiveBlending}
+                                side={THREE.DoubleSide}
+                            />
+                        </mesh>
+                    </group>
+                )}
+
                 <group ref={meshRef}>
                     {/* Trail for Voyager */}
                     {isVoyager && (

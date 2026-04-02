@@ -15,8 +15,9 @@ export const PRESETS = [
     { name: "Bennu", a: 3.8, realA: 1.13, e: 0.204, color: "#7a6655", radius: 0.07, type: "asteroid", initialOffset: 0, i: 6.03, raan: 66.2, argp: 66.2 },
     // Comets
     { name: "Comet 67P", a: 4.5, realA: 3.46, e: 0.641, color: "#5a5a5a", radius: 0.1, type: "comet", initialOffset: 0, i: 7.04, raan: 50.1, argp: 12.8 },
+    { name: "153P/Ikeya–Zhang", a: 48.0, realA: 51.17, e: 0.99, color: "#b8ecff", radius: 0.14, type: "comet", initialOffset: 0, i: 28.1, raan: 93.4, argp: 34.9 },
     // Interstellar
-    { name: "3I/Atlas", a: 0.31, realA: null, e: 6.14, color: "#00e5ff", radius: 0.11, type: "interstellar", initialOffset: 0, i: 0, raan: 0, argp: 0 },
+    { name: "3I/Atlas", a: 0.31, realA: null, e: 6.14, color: "#00e5ff", radius: 0.11, type: "interstellar", initialOffset: 0, i: 175.12093, raan: 322.34889, argp: 127.7735 },
 ]
 
 export const OBSERVATIONS = [

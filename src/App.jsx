@@ -23,6 +23,7 @@ function App() {
     argp: 0, // Argument of periapsis (degrees)
     showSolarGrid: false,
     showSolarElements: false,
+    bodyType: null,
     activePreset: "Sandbox",
     activeType: null
   })

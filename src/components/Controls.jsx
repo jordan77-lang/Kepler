@@ -43,6 +43,7 @@ export default function Controls({ config, setConfig }) {
                 model: null,
                 bodies: null,
                 realA: null, // Clear real physics data for sandbox
+                bodyType: null,
                 i: 0,
                 raan: 0,
                 argp: 0,
@@ -66,6 +67,7 @@ export default function Controls({ config, setConfig }) {
                 activeType: null,
                 model: null,
                 realA: null,
+                bodyType: null,
                 i: 0,
                 raan: 0,
                 argp: 0,
@@ -88,6 +90,7 @@ export default function Controls({ config, setConfig }) {
                 modelScale: p.scale, // Pass scale if present
                 locked: true,
                 realA: p.realA, // Pass real data
+                bodyType: p.type ?? null,
                 i: p.i ?? 0,
                 raan: p.raan ?? 0,
                 argp: p.argp ?? 0,
@@ -147,6 +150,7 @@ export default function Controls({ config, setConfig }) {
                     modelScale: undefined,
                     bodies: null,
                     realA: null,
+                    bodyType: null,
                     i: 0,
                     raan: 0,
                     argp: 0,

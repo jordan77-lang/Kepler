@@ -96,6 +96,7 @@ function SceneContent({ config }) {
                             color={body.color}
                             model={body.model}
                             modelScale={body.scale}
+                            type={body.type}
                             name={body.name} // Pass name for detection
                             initialOffset={SOLAR_CLASSIC_START_OFFSET}
                             resetTrigger={config.resetTrigger}
@@ -125,6 +126,8 @@ function SceneContent({ config }) {
                         color={config.color || "#4caf50"}
                         model={config.model}
                         modelScale={config.modelScale}
+                        type={config.bodyType}
+                        name={config.activePreset}
                         resetTrigger={config.resetTrigger}
                         showRadius={showRadius}
                     />
